@@ -1,0 +1,4 @@
+PlaceholderTest:test_ConstantsMatchSharedConfig() (gas: 338)
+PlaceholderTest:test_Metadata() (gas: 15074)
+PlaceholderTest:test_OwnerIsDeployer() (gas: 7691)
+PlaceholderTest:test_Ping() (gas: 9620)

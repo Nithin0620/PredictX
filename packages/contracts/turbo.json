@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["out/**", "cache/**"]
+    },
+    "test": {
+      "outputs": []
+    }
+  }
+}

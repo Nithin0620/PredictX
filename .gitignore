@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Test / coverage
+coverage/
+
+# Foundry (Phase 3+)
+cache/
+broadcast/
+lib/
+!packages/shared/src/abis/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Misc
+*.pem
+.vercel

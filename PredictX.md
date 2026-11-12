@@ -44,10 +44,10 @@ The market price represents the crowd's implied probability of an outcome.
 
 For example:
 
-| Share | Price | Implied probability |
-|-------|-------|---------------------|
-| YES   | \$0.65 | 65%                |
-| NO    | \$0.35 | 35%                |
+| Share | Price  | Implied probability |
+| ----- | ------ | ------------------- |
+| YES   | \$0.65 | 65%                 |
+| NO    | \$0.35 | 35%                 |
 
 This is the basic idea.
 
@@ -65,7 +65,7 @@ Imagine three types of users:
 
 1. **Market creation**
 
-   A user creates: *"Will ETH reach \$5,000 by December 2027?"*
+   A user creates: _"Will ETH reach \$5,000 by December 2027?"_
 
    They specify the closing time, resolution criteria and initial liquidity.
 
@@ -118,7 +118,7 @@ Example:
 > - 65¢ **YES** — 65% implied probability
 > - 35¢ **NO** — 35% implied probability
 >
-> *Illustrative market data, not a live market.*
+> _Illustrative market data, not a live market._
 
 For your first version, you can use a simple **automated market maker (AMM)** to determine share prices.
 
@@ -158,7 +158,7 @@ Once the outcome is verified:
 For example:
 
 | User    | Position | Shares | Payout |
-|---------|----------|--------|--------|
+| ------- | -------- | ------ | ------ |
 | Alice   | YES      | 100    | \$100  |
 | Bob     | NO       | 50     | \$0    |
 | Charlie | YES      | 30     | \$30   |
@@ -171,27 +171,27 @@ The smart contract handles the settlement logic.
 
 I would recommend a **hybrid architecture**: trading and settlement happen on-chain, while market discovery, analytics and indexing happen through your backend.
 
-| Layer | Technology | Responsibility |
-|-------|-----------|----------------|
-| **Frontend** | Next.js + TypeScript | Market dashboard · Trading UI · Portfolio |
-| **Web3** | Wagmi + Viem | Wallet connection · Contract interactions |
-| **Contracts** | Solidity | Market · Shares · AMM · Settlement |
-| **Backend** | Node.js | REST APIs · Indexer · Analytics |
-| **Database** | PostgreSQL | Markets · Users · Trades |
-| **Jobs** | Redis + BullMQ | Background jobs · Retries |
-| **Chain** | Ethereum / Base | Testnet blockchain |
-| **Oracle** | Chainlink / Resolver | External data verification |
+| Layer         | Technology           | Responsibility                            |
+| ------------- | -------------------- | ----------------------------------------- |
+| **Frontend**  | Next.js + TypeScript | Market dashboard · Trading UI · Portfolio |
+| **Web3**      | Wagmi + Viem         | Wallet connection · Contract interactions |
+| **Contracts** | Solidity             | Market · Shares · AMM · Settlement        |
+| **Backend**   | Node.js              | REST APIs · Indexer · Analytics           |
+| **Database**  | PostgreSQL           | Markets · Users · Trades                  |
+| **Jobs**      | Redis + BullMQ       | Background jobs · Retries                 |
+| **Chain**     | Ethereum / Base      | Testnet blockchain                        |
+| **Oracle**    | Chainlink / Resolver | External data verification                |
 
 ### Suggested smart contracts
 
-| Contract | Responsibility |
-|----------|----------------|
-| `MarketFactory.sol` | Create markets |
-| `PredictionMarket.sol` | Market lifecycle |
-| `OutcomeToken.sol` | YES/NO shares |
-| `AMM.sol` | Pricing and liquidity |
-| `OracleResolver.sol` | Verify outcomes |
-| `Settlement.sol` | Calculate payouts |
+| Contract               | Responsibility        |
+| ---------------------- | --------------------- |
+| `MarketFactory.sol`    | Create markets        |
+| `PredictionMarket.sol` | Market lifecycle      |
+| `OutcomeToken.sol`     | YES/NO shares         |
+| `AMM.sol`              | Pricing and liquidity |
+| `OracleResolver.sol`   | Verify outcomes       |
+| `Settlement.sol`       | Calculate payouts     |
 
 You don't necessarily need six separate contracts initially. You can combine related responsibilities and split them as the project grows.
 
@@ -228,14 +228,14 @@ src/
 
 Even though blockchain stores transactions and ownership, PostgreSQL is useful for fast querying and analytics.
 
-| Table | Important fields |
-|-------|------------------|
-| `users` | id, wallet_address |
-| `markets` | id, question, deadline, status |
-| `positions` | user_id, market_id, outcome, shares |
-| `trades` | market_id, user_id, amount, price |
-| `transactions` | tx_hash, block_number, status |
-| `resolutions` | market_id, outcome, evidence_url |
+| Table          | Important fields                    |
+| -------------- | ----------------------------------- |
+| `users`        | id, wallet_address                  |
+| `markets`      | id, question, deadline, status      |
+| `positions`    | user_id, market_id, outcome, shares |
+| `trades`       | market_id, user_id, amount, price   |
+| `transactions` | tx_hash, block_number, status       |
+| `resolutions`  | market_id, outcome, evidence_url    |
 
 > **Important:** your database is an indexed representation of blockchain state, not the ultimate authority for balances or settlement.
 
@@ -271,12 +271,12 @@ Once the basic version works, consider these:
 
 I'd build this in four phases rather than trying to implement everything at once.
 
-| Phase | Duration | Deliverable |
-|-------|----------|-------------|
-| 1. Smart contracts | 1–2 weeks | Market creation, shares, trading, settlement |
-| 2. Backend | 1 week | Node.js APIs, PostgreSQL, event indexer |
-| 3. Frontend | 1 week | Wallet, market dashboard, portfolio |
-| 4. Advanced features | 1–2 weeks | Oracle, dispute mechanism, analytics |
+| Phase                | Duration  | Deliverable                                  |
+| -------------------- | --------- | -------------------------------------------- |
+| 1. Smart contracts   | 1–2 weeks | Market creation, shares, trading, settlement |
+| 2. Backend           | 1 week    | Node.js APIs, PostgreSQL, event indexer      |
+| 3. Frontend          | 1 week    | Wallet, market dashboard, portfolio          |
+| 4. Advanced features | 1–2 weeks | Oracle, dispute mechanism, analytics         |
 
 **Target:** around 5–6 weeks for a solid MVP with some advanced functionality.
 

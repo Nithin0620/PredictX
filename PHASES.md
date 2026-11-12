@@ -12,7 +12,7 @@ Each phase has the same shape:
 - **Goal** — one sentence on why this phase exists.
 - **Sub-phases** — numbered sub-levels you complete in order.
 - **Deliverables** — concrete artifacts (files, contracts, endpoints, pages).
-- **Exit criteria (Definition of Done)** — what must be *true* before moving on.
+- **Exit criteria (Definition of Done)** — what must be _true_ before moving on.
 - **Risks / notes** — what usually goes wrong here.
 
 Phases are ordered by dependency, not by importance. You can run **contracts (1–13)** and
@@ -25,19 +25,19 @@ safe default for a solo builder.
 
 These decisions are locked before Phase 1. They are the answer to "what should I cut".
 
-| Feature | Decision | Why |
-|---|---|---|
-| Real ERC-20 YES/NO outcome tokens | **Keep** | More impressive, composable, testable. |
-| CPMM (x·y=k) AMM over YES/NO | **Keep** | Proven math, no need to invent pricing. |
-| LMSR / CLOB order book | **Cut (MVP)** | Huge complexity, poor ROI for portfolio. |
-| Chainlink price-feed markets | **Keep** | Objective, automatable, the strong differentiator. |
-| Sports / subjective markets | **Cut (MVP)** | Resolution + dispute nightmare. |
-| Full UMA-style decentralized arbitration | **Cut (MVP)** | Replace with bonded propose/challenge + admin arbiter. |
-| AI market insights | **Defer to Phase 20** | Nice-to-have, not core, no resolution authority. |
-| Dispute bond + dispute window | **Keep (simplified)** | One bonded challenge round, then arbiter. |
-| Mainnet / real money | **Never in this project** | Regulatory + safety. Testnet + mock USDC only. |
-| Mobile app | **Cut** | Responsive web is enough. |
-| Multi-outcome (non-binary) markets | **Cut (MVP)** | Binary only; architecture leaves room. |
+| Feature                                  | Decision                  | Why                                                    |
+| ---------------------------------------- | ------------------------- | ------------------------------------------------------ |
+| Real ERC-20 YES/NO outcome tokens        | **Keep**                  | More impressive, composable, testable.                 |
+| CPMM (x·y=k) AMM over YES/NO             | **Keep**                  | Proven math, no need to invent pricing.                |
+| LMSR / CLOB order book                   | **Cut (MVP)**             | Huge complexity, poor ROI for portfolio.               |
+| Chainlink price-feed markets             | **Keep**                  | Objective, automatable, the strong differentiator.     |
+| Sports / subjective markets              | **Cut (MVP)**             | Resolution + dispute nightmare.                        |
+| Full UMA-style decentralized arbitration | **Cut (MVP)**             | Replace with bonded propose/challenge + admin arbiter. |
+| AI market insights                       | **Defer to Phase 20**     | Nice-to-have, not core, no resolution authority.       |
+| Dispute bond + dispute window            | **Keep (simplified)**     | One bonded challenge round, then arbiter.              |
+| Mainnet / real money                     | **Never in this project** | Regulatory + safety. Testnet + mock USDC only.         |
+| Mobile app                               | **Cut**                   | Responsive web is enough.                              |
+| Multi-outcome (non-binary) markets       | **Cut (MVP)**             | Binary only; architecture leaves room.                 |
 
 **Golden rule:** if a feature is not needed for a demoable end-to-end trade → resolve → claim loop,
 it does not belong in Phases 1–19.
@@ -46,28 +46,28 @@ it does not belong in Phases 1–19.
 
 ## 2. Phase overview
 
-| # | Phase | Est. (part-time) | Depends on | Primary deliverable |
-|---|-------|------------------|------------|---------------------|
-| 1 | Foundations & architecture decisions | 2–3 days | — | ADRs + repo skeleton |
-| 2 | Monorepo, tooling & CI | 2–3 days | 1 | Working pnpm/turbo workspace + CI |
-| 3 | Local chain & contract scaffolding | 3–4 days | 2 | Foundry project + local Base fork |
-| 4 | Collateral, factory & market registry | 4–5 days | 3 | `MockUSDC`, `MarketFactory` |
-| 5 | Market lifecycle state machine | 4–5 days | 4 | `PredictionMarket` states + guards |
-| 6 | Outcome tokens & collateral vault | 5–6 days | 5 | `OutcomeToken`, split/merge |
-| 7 | AMM pricing engine (CPMM) | 6–7 days | 6 | `AMM` buy/sell quote + swap |
-| 8 | Trading engine (fees, slippage) | 5–6 days | 7 | End-to-end trade + events |
-| 9 | Liquidity provision & LP tokens | 4–5 days | 8 | Add/remove liquidity + fees |
-| 10 | Settlement & claim flow | 4–5 days | 9 | Payouts + double-claim protection |
-| 11 | Oracle integration | 5–6 days | 10 | Chainlink resolver + manual resolver |
-| 12 | Dispute resolution & finalization | 5–6 days | 11 | Propose/challenge/arbiter flow |
-| 13 | Contract hardening & test suite | 6–8 days | 12 | Fuzz/invariant tests, gas report |
-| 14 | Backend foundation (API + DB) | 5–6 days | 13 | Express API + Prisma/Neon schema |
-| 15 | Blockchain indexer | 6–7 days | 14 | Event sync + reorg handling |
-| 16 | Domain modules, workers & notifications | 6–7 days | 15 | REST modules + BullMQ jobs |
-| 17 | Realtime layer | 3–4 days | 16 | WebSocket/SSE probability feed |
-| 18 | Frontend foundation & wallet | 4–5 days | 17 | Next.js shell + SIWE login |
-| 19 | Market discovery, trading & portfolio UI | 7–9 days | 18 | Full user-facing product |
-| 20 | Advanced features, deployment & launch | 7–10 days | 19 | Deployed app + docs + demo |
+| #   | Phase                                    | Est. (part-time) | Depends on | Primary deliverable                  |
+| --- | ---------------------------------------- | ---------------- | ---------- | ------------------------------------ |
+| 1   | Foundations & architecture decisions     | 2–3 days         | —          | ADRs + repo skeleton                 |
+| 2   | Monorepo, tooling & CI                   | 2–3 days         | 1          | Working pnpm/turbo workspace + CI    |
+| 3   | Local chain & contract scaffolding       | 3–4 days         | 2          | Foundry project + local Base fork    |
+| 4   | Collateral, factory & market registry    | 4–5 days         | 3          | `MockUSDC`, `MarketFactory`          |
+| 5   | Market lifecycle state machine           | 4–5 days         | 4          | `PredictionMarket` states + guards   |
+| 6   | Outcome tokens & collateral vault        | 5–6 days         | 5          | `OutcomeToken`, split/merge          |
+| 7   | AMM pricing engine (CPMM)                | 6–7 days         | 6          | `AMM` buy/sell quote + swap          |
+| 8   | Trading engine (fees, slippage)          | 5–6 days         | 7          | End-to-end trade + events            |
+| 9   | Liquidity provision & LP tokens          | 4–5 days         | 8          | Add/remove liquidity + fees          |
+| 10  | Settlement & claim flow                  | 4–5 days         | 9          | Payouts + double-claim protection    |
+| 11  | Oracle integration                       | 5–6 days         | 10         | Chainlink resolver + manual resolver |
+| 12  | Dispute resolution & finalization        | 5–6 days         | 11         | Propose/challenge/arbiter flow       |
+| 13  | Contract hardening & test suite          | 6–8 days         | 12         | Fuzz/invariant tests, gas report     |
+| 14  | Backend foundation (API + DB)            | 5–6 days         | 13         | Express API + Prisma/Neon schema     |
+| 15  | Blockchain indexer                       | 6–7 days         | 14         | Event sync + reorg handling          |
+| 16  | Domain modules, workers & notifications  | 6–7 days         | 15         | REST modules + BullMQ jobs           |
+| 17  | Realtime layer                           | 3–4 days         | 16         | WebSocket/SSE probability feed       |
+| 18  | Frontend foundation & wallet             | 4–5 days         | 17         | Next.js shell + SIWE login           |
+| 19  | Market discovery, trading & portfolio UI | 7–9 days         | 18         | Full user-facing product             |
+| 20  | Advanced features, deployment & launch   | 7–10 days        | 19         | Deployed app + docs + demo           |
 
 **Realistic total:** ~10–14 weeks part-time for a high-quality finish. Compress to ~7–8 weeks by
 using the "minimum path" noted at the bottom.
@@ -93,15 +93,18 @@ using the "minimum path" noted at the bottom.
 1.8 Define the demo story you must be able to show at the end.
 
 **Deliverables**
+
 - `docs/adr/0001-chain.md` … `docs/adr/0006-resolution.md`
 - `docs/vision.md` (one page)
 - `docs/demo-script.md`
 
 **Exit criteria**
+
 - Every decision in `PROJECT_PLAN.md` §Scope is written and justified.
 - You can explain the full trade → resolve → claim loop on a whiteboard.
 
 **Risks**
+
 - Scope creep starts here. Say "no" in writing now, not later.
 
 ---
@@ -120,16 +123,19 @@ using the "minimum path" noted at the bottom.
 2.7 Add `Makefile` or root scripts: `dev`, `test`, `deploy:local`, `indexer:dev`.
 
 **Deliverables**
+
 - Root `package.json`, `pnpm-workspace.yaml`, `turbo.json`
 - `packages/shared` with generated ABIs placeholder
 - `.github/workflows/ci.yml`
 - README with setup instructions
 
 **Exit criteria**
+
 - `pnpm install && pnpm build && pnpm test` passes locally and in CI.
 - A new contributor can run the project from the README alone.
 
 **Risks**
+
 - Over-engineering tooling. Timebox to 3 days max.
 
 ---
@@ -149,16 +155,19 @@ using the "minimum path" noted at the bottom.
 3.8 Add thirdweb CLI (`npx thirdweb deploy`) for testnet deployment; Foundry stays the source of truth for tests and local deploys.
 
 **Deliverables**
+
 - Compiling `packages/contracts` with empty/skeleton contracts
 - `script/DeployLocal.s.sol`
 - `make chain` boots Anvil with deterministic accounts
 - thirdweb deploy config/notes in `docs/adr/`
 
 **Exit criteria**
+
 - `forge build` clean, `forge test` runs (even if 0 real tests).
 - Anvil boots and you can deploy a placeholder contract to it.
 
 **Risks**
+
 - Solc/remapping mismatches. Pin versions explicitly.
 
 ---
@@ -178,15 +187,18 @@ using the "minimum path" noted at the bottom.
 4.8 Write deploy script wiring USDC → factory.
 
 **Deliverables**
+
 - `MockUSDC.sol`, `MarketFactory.sol`, `MarketCreated` event
 - Tests covering creation + invalid configs
 - Deploy script: USDC + factory
 
 **Exit criteria**
+
 - You can create N markets locally and enumerate them from the factory.
 - Invalid configs (past deadline, zero liquidity, empty question) revert.
 
 **Risks**
+
 - Gas cost of deploying a contract per market. Accept for MVP; note a clone/proxy option later.
 
 ---
@@ -206,15 +218,18 @@ using the "minimum path" noted at the bottom.
 5.8 Document the state diagram in `docs/state-machine.md`.
 
 **Deliverables**
+
 - `PredictionMarket.sol` with full state enum + guards
 - State-machine test matrix
 - `docs/state-machine.md` diagram
 
 **Exit criteria**
+
 - No action can bypass a required state.
 - The full state × action test matrix is green.
 
 **Risks**
+
 - Missing a transition → stuck markets. Test exhaustively now.
 
 ---
@@ -234,14 +249,17 @@ using the "minimum path" noted at the bottom.
 6.8 Fuzz test the invariant: for random split/merge sequences, backing never breaks.
 
 **Deliverables**
+
 - `OutcomeToken.sol`, `split()`, `merge()` in market
 - Invariant test proving full collateralization
 
 **Exit criteria**
+
 - `split` then `merge` returns exactly the input amount (minus zero fees).
 - The collateral invariant holds under fuzzing.
 
 **Risks**
+
 - Decimal mismatch (USDC 6 vs token 18). Pick one and document everywhere.
 
 ---
@@ -262,16 +280,19 @@ using the "minimum path" noted at the bottom.
 7.9 Fuzz/invariant tests: `k` never decreases; pool always fully backed.
 
 **Deliverables**
+
 - `AMM.sol` with quote + swap
 - Pricing formula documented in `docs/amm.md`
 - Invariant tests for `k` and backing
 
 **Exit criteria**
+
 - Buying YES always raises YES price; selling lowers it.
 - No sequence of trades can drain collateral or break `k`.
 - Implied probability is always within (0, 1).
 
 **Risks**
+
 - The #1 place to lose money/bugs. Do not move on until invariants pass.
 
 ---
@@ -292,15 +313,18 @@ using the "minimum path" noted at the bottom.
 8.9 Gas snapshot of buy/sell.
 
 **Deliverables**
+
 - `buy`/`sell` end-to-end with events + fees
 - Integration tests + gas report
 
 **Exit criteria**
+
 - A user can buy YES, then sell YES, and receive the correct net collateral.
 - Slippage/deadline violations revert with clear custom errors.
 - Every state change emits an indexable event.
 
 **Risks**
+
 - Fee math rounding. Use consistent rounding direction (favor the pool) and test it.
 
 ---
@@ -320,14 +344,17 @@ using the "minimum path" noted at the bottom.
 9.8 Invariant: LP redemption never exceeds pool solvency.
 
 **Deliverables**
+
 - LP token + add/remove liquidity + fee distribution
 - Tests + invariants
 
 **Exit criteria**
+
 - Two LPs can add liquidity, earn fees from trades, and withdraw proportionally.
 - Removing all liquidity still leaves outstanding positions claimable at settlement.
 
 **Risks**
+
 - Interaction between LP exit and open positions. Test "LP leaves, then market resolves".
 
 ---
@@ -347,14 +374,17 @@ using the "minimum path" noted at the bottom.
 10.8 Invariant: total payouts ≤ total collateral (no insolvency).
 
 **Deliverables**
+
 - `redeem()` + claim tracking + LP settlement
 - Settlement invariant tests
 
 **Exit criteria**
+
 - After finalization, every winner can claim exactly `shares × 1 USDC` once.
 - Sum of all payouts never exceeds collateral held.
 
 **Risks**
+
 - Rounding dust. Decide who absorbs dust (treasury) and document it.
 
 ---
@@ -375,14 +405,17 @@ using the "minimum path" noted at the bottom.
 11.9 Document resolution criteria format in `docs/resolution.md`.
 
 **Deliverables**
+
 - `OracleResolver.sol`, `ManualResolver`, resolution docs
 - Fork tests against real Chainlink feed
 
 **Exit criteria**
+
 - An ETH-price market resolves automatically from the feed on a fork.
 - Stale/manipulated feed data cannot force resolution.
 
 **Risks**
+
 - This is the hardest correctness surface. Keep the first markets objective only.
 
 ---
@@ -402,15 +435,18 @@ using the "minimum path" noted at the bottom.
 12.8 Document trust model + "what a real UMA integration would replace".
 
 **Deliverables**
+
 - Propose/dispute/finalize flow + bond logic
 - Trust-model doc
 
 **Exit criteria**
+
 - No payout is possible before finalization.
 - A disputed outcome cannot be finalized without arbiter action.
 - Bonds are conserved (never lost to the void).
 
 **Risks**
+
 - Do not over-build arbitration. One round + admin arbiter is enough for a portfolio.
 
 ---
@@ -430,16 +466,19 @@ using the "minimum path" noted at the bottom.
 13.8 Freeze the contract ABI; generate TypeScript ABIs into `packages/shared`.
 
 **Deliverables**
+
 - High-coverage test suite + invariants
 - Slither report + gas report
 - `docs/security.md`
 - Frozen ABIs in `packages/shared`
 
 **Exit criteria**
+
 - CI enforces tests + coverage + lint on contracts.
 - ABIs are generated and consumable by backend/frontend.
 
 **Risks**
+
 - Perfectionism. Timebox; "audit-ready" not "audited".
 
 ---
@@ -459,15 +498,18 @@ using the "minimum path" noted at the bottom.
 14.8 Docker Compose: Redis for local dev (Postgres is Neon; no local PG needed).
 
 **Deliverables**
+
 - Running API with `/health`, `/auth/siwe`, `/auth/verify`
 - Prisma schema + migrations against Neon
 - Docker Compose (Redis) + Neon branch config in `.env.example`
 
 **Exit criteria**
+
 - Backend boots, migrates DB, and authenticates a wallet via SIWE.
 - Config comes entirely from env; no hardcoded addresses.
 
 **Risks**
+
 - Modeling DB before indexer events are final. Revisit schema in Phase 15.
 
 ---
@@ -488,16 +530,19 @@ using the "minimum path" noted at the bottom.
 15.9 Add indexer lag/health metrics.
 
 **Deliverables**
+
 - `blockchain/indexer` with backfill + live modes
 - Reorg handling + idempotency tests
 - Derived `positions` / `market_stats`
 
 **Exit criteria**
+
 - Killing and restarting the indexer resumes exactly where it left off.
 - Replaying the same block twice produces identical DB state.
 - A simulated reorg rolls back correctly.
 
 **Risks**
+
 - This is where most "Web3 backend" projects break. Budget extra time here.
 
 ---
@@ -518,17 +563,20 @@ using the "minimum path" noted at the bottom.
 16.9 API tests (integration) + OpenAPI/Swagger docs.
 
 **Deliverables**
+
 - REST modules + OpenAPI docs
 - BullMQ workers + DLQ
 - Notification pipeline
 
 **Exit criteria**
+
 - Frontend can fetch everything it needs from documented endpoints.
 - Resolution worker can auto-close and trigger resolution for matured markets.
 - Failed jobs retry and surface in a dead-letter queue.
 
 **Risks**
-- Duplicating on-chain logic in backend. Backend *reads* chain; it never *decides* outcomes.
+
+- Duplicating on-chain logic in backend. Backend _reads_ chain; it never _decides_ outcomes.
 
 ---
 
@@ -546,15 +594,18 @@ using the "minimum path" noted at the bottom.
 17.7 Document the realtime protocol.
 
 **Deliverables**
+
 - WS/SSE server + pub/sub
 - Reconnect/replay protocol
 - Load test results
 
 **Exit criteria**
+
 - A trade on-chain updates all subscribed clients' implied probability in near real time.
 - Clients can reconnect and catch up without missing events.
 
 **Risks**
+
 - Redis pub/sub vs in-process. Use Redis so it survives restarts and scales.
 
 ---
@@ -574,14 +625,17 @@ using the "minimum path" noted at the bottom.
 18.8 Add a faucet page to mint mock USDC.
 
 **Deliverables**
+
 - Next.js shell + wallet connect + SIWE session
 - Design system primitives + faucet
 
 **Exit criteria**
+
 - A user can connect a wallet, sign in, and see their address in the nav.
 - Wrong network is detected and handled gracefully.
 
 **Risks**
+
 - Wallet/network config churn. Pin chain + RPC in one config module.
 
 ---
@@ -603,15 +657,18 @@ using the "minimum path" noted at the bottom.
 19.10 E2E test (Playwright): connect → buy → resolve → claim.
 
 **Deliverables**
+
 - Full market/trading/portfolio/create/resolve/claim UI
 - Playwright E2E happy path
 - Responsive + a11y pass
 
 **Exit criteria**
+
 - A new user can go from faucet → buy YES → see probability move → claim after resolution.
 - The Playwright happy path is green in CI.
 
 **Risks**
+
 - This is the biggest phase. Reuse components aggressively; do not gold-plate visuals.
 
 ---
@@ -633,16 +690,19 @@ using the "minimum path" noted at the bottom.
 20.10 Portfolio package: screenshots, metrics, what-you-learned, resume bullets.
 
 **Deliverables**
+
 - Live app on Base Sepolia
 - Verified contracts + monitoring
 - Docs + demo video + resume package
 
 **Exit criteria**
+
 - A stranger can open the URL, get test USDC, trade, and claim.
 - All services are monitored and restart-safe.
 - You have a 3-minute demo recording and a one-page architecture summary.
 
 **Risks**
+
 - Deployment surprises (RPC limits, CORS, env). Do a staging deploy in Phase 18/19 early.
 
 ---
@@ -691,23 +751,24 @@ At the **end of every phase**, before starting the next one, write a report. Thi
 a phase is only "complete" when its report exists and the exit criteria are green.
 
 **Where to put it:**
+
 - Create `reports/phase-XX.md` (one file per phase), **and**
 - Paste the same summary into the phase's PR description, **and**
 - Append a 3-line summary to `reports/PROGRESS.md`.
 
 **What it must contain (all 9 sections):**
 
-| # | Section | What to answer |
-|---|---------|----------------|
-| 1 | **Phase identity** | Phase number + name; which **part of the project** it belongs to (e.g. "Contracts → AMM", "Backend → Indexer"). |
-| 2 | **Scope planned** | The sub-phases and deliverables listed in this file for that phase. |
-| 3 | **What was done** | What actually shipped, mapped to the sub-phase numbers. |
-| 4 | **What was skipped / deferred** | Anything cut from the phase, **and why** (time, complexity, dependency). Never leave this blank — if nothing was cut, say "none". |
-| 5 | **File changes** | Added / modified / deleted files, with **lines added / removed** (from `git diff --stat`). Include total LOC delta. |
-| 6 | **Effects / impact** | What now works, behavior changes, new risks or tech debt introduced, anything that affects later phases. |
-| 7 | **Verification** | Tests run, coverage %, gas snapshot delta, CI status, manual checks performed. |
-| 8 | **Progress** | Overall project progress: phases complete / 20, rough % done, on-track vs. behind schedule, and what remains. |
-| 9 | **Blockers & next** | Open issues, known bugs, and the exact next phase to start. |
+| #   | Section                         | What to answer                                                                                                                    |
+| --- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Phase identity**              | Phase number + name; which **part of the project** it belongs to (e.g. "Contracts → AMM", "Backend → Indexer").                   |
+| 2   | **Scope planned**               | The sub-phases and deliverables listed in this file for that phase.                                                               |
+| 3   | **What was done**               | What actually shipped, mapped to the sub-phase numbers.                                                                           |
+| 4   | **What was skipped / deferred** | Anything cut from the phase, **and why** (time, complexity, dependency). Never leave this blank — if nothing was cut, say "none". |
+| 5   | **File changes**                | Added / modified / deleted files, with **lines added / removed** (from `git diff --stat`). Include total LOC delta.               |
+| 6   | **Effects / impact**            | What now works, behavior changes, new risks or tech debt introduced, anything that affects later phases.                          |
+| 7   | **Verification**                | Tests run, coverage %, gas snapshot delta, CI status, manual checks performed.                                                    |
+| 8   | **Progress**                    | Overall project progress: phases complete / 20, rough % done, on-track vs. behind schedule, and what remains.                     |
+| 9   | **Blockers & next**             | Open issues, known bugs, and the exact next phase to start.                                                                       |
 
 **Copy-paste template:**
 
@@ -715,34 +776,42 @@ a phase is only "complete" when its report exists and the exit criteria are gree
 # Phase XX — <Name>
 
 ## 1. Phase identity
+
 - Phase: XX / 20
 - Name: <phase name>
 - Project part: <e.g. Contracts → AMM>
 
 ## 2. Scope planned
+
 - <sub-phase 1>
 - <sub-phase 2>
 
 ## 3. What was done
+
 - <what shipped, per sub-phase>
 
 ## 4. What was skipped / deferred
-- <item> — reason: <why>  (or "None")
+
+- <item> — reason: <why> (or "None")
 
 ## 5. File changes
-| Type | File | Lines +/- |
-|------|------|-----------|
-| Added | `path/to/file` | +120 |
-| Modified | `path/to/file` | +18 / -4 |
-| Deleted | `path/to/file` | -30 |
+
+| Type     | File           | Lines +/- |
+| -------- | -------------- | --------- |
+| Added    | `path/to/file` | +120      |
+| Modified | `path/to/file` | +18 / -4  |
+| Deleted  | `path/to/file` | -30       |
+
 - **Total:** +X / -Y across N files (`git diff --stat`)
 
 ## 6. Effects / impact
+
 - <what now works>
 - <behavior changes>
 - <new risks / tech debt>
 
 ## 7. Verification
+
 - Tests: <pass/fail counts>
 - Coverage: <X%>
 - Gas snapshot: <delta>
@@ -750,12 +819,14 @@ a phase is only "complete" when its report exists and the exit criteria are gree
 - Manual: <what you clicked/ran>
 
 ## 8. Progress
+
 - Phases complete: XX / 20 (<%>)
 - Overall estimate: <%> done
 - Schedule: <on track / X days behind>
 - Remaining: <summary>
 
 ## 9. Blockers & next
+
 - Blockers: <none / list>
 - Next phase: Phase YY — <name>
 ```

@@ -1,0 +1,13 @@
+{
+  "name": "@predictx/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo \"[web] placeholder — Next.js scaffold lands in Phase 18\"",
+    "dev": "echo \"[web] placeholder — Next.js scaffold lands in Phase 18\"",
+    "typecheck": "echo \"[web] placeholder — Next.js scaffold lands in Phase 18\"",
+    "test": "echo \"[web] placeholder — Playwright tests land in Phase 19\"",
+    "clean": "echo \"[web] nothing to clean yet\""
+  }
+}

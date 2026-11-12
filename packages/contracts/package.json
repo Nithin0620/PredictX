@@ -1,0 +1,18 @@
+{
+  "name": "@predictx/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "dev": "anvil --chain-id 31337",
+    "typecheck": "forge build",
+    "test": "forge test",
+    "test:ci": "FOUNDRY_PROFILE=ci forge test",
+    "lint": "forge fmt --check",
+    "fmt": "forge fmt",
+    "snapshot": "forge snapshot",
+    "coverage": "forge coverage --report summary",
+    "deploy:local": "forge script script/DeployLocal.s.sol:DeployLocal --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast",
+    "clean": "forge clean"
+  }
+}

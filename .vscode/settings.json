@@ -1,0 +1,13 @@
+{
+  "solidity.packageDefaultDependenciesDirectory": "lib",
+  "solidity.remappings": [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/"
+  ],
+  "search.exclude": {
+    "**/lib/**": true,
+    "**/out/**": true,
+    "**/cache/**": true,
+    "**/broadcast/**": true
+  }
+}

@@ -16,6 +16,8 @@ export type Address = `0x${string}`;
 
 export interface MarketConfig {
   question: string;
+  /** Where the outcome comes from (URL, feed description, or "" for manual). */
+  resolutionSource: string;
   /** Unix timestamp (seconds) after which trading closes. */
   deadline: number;
   resolver: Address;

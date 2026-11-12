@@ -5,8 +5,10 @@ via the **thirdweb CLI** (see `docs/adr/0007-thirdweb-deployment.md`).
 
 ## Status
 
-Phase 3: Foundry scaffold + toolchain verification. The only contract is `Placeholder.sol`
-(replaced by `MockUSDC` / `MarketFactory` / `PredictionMarket` in Phase 4+).
+Phase 5: `MockUSDC` (6-decimal testnet faucet), `MarketFactory` (validated, permissionless
+creation with a per-creator cooldown, sequential ids, enumerable registry), and `PredictionMarket`
+with the lifecycle state machine (`Created → Active → Closed → Proposed → Finalized`). Outcome
+tokens and the AMM arrive in Phase 6–8; the dispute path in Phase 12. See `docs/state-machine.md`.
 
 ## Prerequisites
 
@@ -52,7 +54,7 @@ pnpm --filter @predictx/contracts test
 # terminal 1 — deterministic Anvil accounts on chain id 31337
 make chain
 
-# terminal 2 — deploy the placeholder
+# terminal 2 — deploy MockUSDC + MarketFactory
 make deploy-local
 ```
 

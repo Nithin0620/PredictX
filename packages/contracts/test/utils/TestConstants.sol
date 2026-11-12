@@ -10,4 +10,5 @@ library TestConstants {
     uint256 internal constant DEFAULT_FEE_BPS = 200;
     uint256 internal constant BPS_DENOMINATOR = 10_000;
     uint256 internal constant DEFAULT_DISPUTE_WINDOW = 2 hours;
+    uint256 internal constant DEFAULT_FINALIZATION_DELAY = 0;
 }

@@ -4,9 +4,9 @@ A decentralized, oracle-powered **binary prediction market** on **Base Sepolia**
 Real ERC-20 YES/NO outcome tokens, a fully-collateralized **CPMM** AMM, **Chainlink** oracle
 resolution, a reorg-safe event indexer, and a Next.js + thirdweb frontend.
 
-> **Status:** Phase 3 of 20 — local chain and Foundry contract scaffolding. Contracts are a
-> placeholder (`Placeholder.sol`) until Phase 4; backend and web are minimal scaffolds. See
-> `PHASES.md` for the full roadmap.
+> **Status:** Phase 5 of 20 — market lifecycle state machine. Markets can be created, activated,
+> closed, proposed, and finalized on-chain; outcome tokens, AMM, backend, and web arrive in later
+> phases. See `PHASES.md` for the full roadmap.
 
 ## Stack
 
@@ -81,12 +81,13 @@ PredictX/
 └── pnpm-workspace.yaml
 ```
 
-## What works right now (Phase 3)
+## What works right now (Phase 5)
 
 - `@predictx/shared` — chain constants, enums, and types, built with `tsc` and tested with Vitest.
 - `@predictx/backend` — minimal Express app exposing `GET /health`, with a Vitest + Supertest test.
-- `@predictx/contracts` — Foundry project compiling against OpenZeppelin 5.7.0 and forge-std 1.17.0,
-  with `Placeholder.sol`, a unit test, and `script/DeployLocal.s.sol`.
+- `@predictx/contracts` — `MockUSDC` (6 decimals, faucet), `MarketFactory` (validation, cooldown,
+  sequential ids, registry), and `PredictionMarket` with the lifecycle state machine, with 37
+  Foundry tests.
 - `@predictx/web` — placeholder; filled in Phase 18.
 - Lint, typecheck, build, test, and formatting enforced in CI.
 - Husky pre-commit runs `lint-staged` (ESLint + Prettier on staged files).
@@ -95,7 +96,7 @@ PredictX/
 
 ```bash
 make chain        # terminal 1: Anvil on chain id 31337 (deterministic accounts)
-make deploy-local # terminal 2: deploy Placeholder.sol
+make deploy-local # terminal 2: deploy MockUSDC + MarketFactory
 ```
 
 ## Docs

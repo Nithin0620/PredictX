@@ -4,9 +4,10 @@ A decentralized, oracle-powered **binary prediction market** on **Base Sepolia**
 Real ERC-20 YES/NO outcome tokens, a fully-collateralized **CPMM** AMM, **Chainlink** oracle
 resolution, a reorg-safe event indexer, and a Next.js + thirdweb frontend.
 
-> **Status:** Phase 5 of 20 — market lifecycle state machine. Markets can be created, activated,
-> closed, proposed, and finalized on-chain; outcome tokens, AMM, backend, and web arrive in later
-> phases. See `PHASES.md` for the full roadmap.
+> **Status:** Phase 7 of 20 — the CPMM pricing engine. Markets can be created, seeded with
+> liquidity, traded (buy/sell YES or NO), split/merged 1:1 with USDC, closed, proposed, and
+> finalized on-chain. Slippage/deadline, LP tokens, and fee routing arrive in Phases 8–9; the backend
+> and web arrive later. See `PHASES.md` for the full roadmap.
 
 ## Stack
 
@@ -81,13 +82,14 @@ PredictX/
 └── pnpm-workspace.yaml
 ```
 
-## What works right now (Phase 5)
+## What works right now (Phase 6)
 
 - `@predictx/shared` — chain constants, enums, and types, built with `tsc` and tested with Vitest.
 - `@predictx/backend` — minimal Express app exposing `GET /health`, with a Vitest + Supertest test.
 - `@predictx/contracts` — `MockUSDC` (6 decimals, faucet), `MarketFactory` (validation, cooldown,
-  sequential ids, registry), and `PredictionMarket` with the lifecycle state machine, with 37
-  Foundry tests.
+  sequential ids, registry), `PredictionMarket` with the lifecycle state machine, per-market YES/NO
+  `OutcomeToken`s (6 decimals), and 1:1 `split`/`merge` with a stateful collateral invariant, with
+  61 Foundry tests.
 - `@predictx/web` — placeholder; filled in Phase 18.
 - Lint, typecheck, build, test, and formatting enforced in CI.
 - Husky pre-commit runs `lint-staged` (ESLint + Prettier on staged files).

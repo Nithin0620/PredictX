@@ -40,8 +40,12 @@ contract PredictionMarketTest is Test {
     }
 
     function _activate(PredictionMarket market) internal {
-        vm.prank(creator);
-        market.activate();
+        uint256 liquidity = market.initialLiquidity();
+        usdc.mint(creator, liquidity);
+        vm.startPrank(creator);
+        usdc.approve(address(market), liquidity);
+        market.seedLiquidity();
+        vm.stopPrank();
     }
 
     function _close(PredictionMarket market) internal {
@@ -72,25 +76,32 @@ contract PredictionMarketTest is Test {
         assertEq(uint256(market.FINALIZATION_DELAY()), TestConstants.DEFAULT_FINALIZATION_DELAY);
     }
 
-    function test_Activate() public {
+    function test_SeedLiquidity() public {
         PredictionMarket market = _newMarket();
+        uint256 liquidity = market.initialLiquidity();
 
-        vm.expectEmit(true, false, false, false);
-        emit PredictionMarket.MarketActivated(market.marketId());
         _activate(market);
 
         assertEq(uint256(market.status()), uint256(MarketStatus.Active));
+        (uint256 reserveYes, uint256 reserveNo) = market.getReserves();
+        assertEq(reserveYes, liquidity);
+        assertEq(reserveNo, liquidity);
+        assertEq(market.priceYes(), 0.5e18);
+        assertEq(usdc.balanceOf(address(market)), liquidity);
+        assertEq(market.yesToken().totalSupply(), liquidity);
+        assertEq(market.noToken().totalSupply(), liquidity);
+        assertTrue(market.isFullyBacked());
     }
 
-    function test_RevertWhen_NonCreatorActivates() public {
+    function test_RevertWhen_NonCreatorSeedsLiquidity() public {
         PredictionMarket market = _newMarket();
 
         vm.prank(stranger);
         vm.expectRevert(abi.encodeWithSelector(PredictionMarket.NotCreator.selector, stranger));
-        market.activate();
+        market.seedLiquidity();
     }
 
-    function test_RevertWhen_ActivateTwice() public {
+    function test_RevertWhen_SeedLiquidityTwice() public {
         PredictionMarket market = _newMarket();
         _activate(market);
 
@@ -100,7 +111,7 @@ contract PredictionMarketTest is Test {
                 PredictionMarket.InvalidState.selector, MarketStatus.Active, MarketStatus.Created
             )
         );
-        market.activate();
+        market.seedLiquidity();
     }
 
     function test_CloseAfterDeadline() public {
@@ -295,9 +306,13 @@ contract PredictionMarketTest is Test {
 
     function _perform(PredictionMarket market, uint256 action, bool expectFailure) internal {
         if (action == 0) {
-            vm.prank(creator);
+            uint256 liquidity = market.initialLiquidity();
+            usdc.mint(creator, liquidity);
+            vm.startPrank(creator);
+            usdc.approve(address(market), liquidity);
             if (expectFailure) vm.expectRevert();
-            market.activate();
+            market.seedLiquidity();
+            vm.stopPrank();
         } else if (action == 1) {
             if (uint256(market.deadline()) > vm.getBlockTimestamp()) vm.warp(market.deadline());
             if (expectFailure) vm.expectRevert();

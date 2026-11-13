@@ -5,10 +5,16 @@ via the **thirdweb CLI** (see `docs/adr/0007-thirdweb-deployment.md`).
 
 ## Status
 
-Phase 5: `MockUSDC` (6-decimal testnet faucet), `MarketFactory` (validated, permissionless
-creation with a per-creator cooldown, sequential ids, enumerable registry), and `PredictionMarket`
-with the lifecycle state machine (`Created → Active → Closed → Proposed → Finalized`). Outcome
-tokens and the AMM arrive in Phase 6–8; the dispute path in Phase 12. See `docs/state-machine.md`.
+Phase 7: `MockUSDC` (6-decimal testnet faucet), `MarketFactory` (validated, permissionless
+creation with a per-creator cooldown, sequential ids, enumerable registry), `PredictionMarket` with
+the lifecycle state machine (`Created → Active → Closed → Proposed → Finalized`), per-market
+`OutcomeToken` YES/NO ERC-20s, 1:1 collateral `split`/`merge`, and a constant-product AMM
+(`seedLiquidity`, `buy`, `sell`, `quoteBuy`, `quoteSell`, `getReserves`, `priceYes`). Fees stay in
+the pool in Phase 7; slippage/deadline, LP tokens, and fee routing arrive in Phases 8–9. Redemption
+is Phase 10; the dispute path is Phase 12. See `docs/amm.md` and `docs/state-machine.md`.
+
+99 contract tests cover the factory, tokens, collateral, lifecycle matrix, AMM quotes/trades, and
+two stateful invariants (collateral backing + CPMM `k`/reserve sync).
 
 ## Prerequisites
 
@@ -67,7 +73,7 @@ Anvil's well-known account #0 is the default deployer for local runs
 packages/contracts/
 ├── foundry.toml
 ├── src/          # Solidity sources
-├── test/         # tests (+ test/utils shared helpers)
+├── test/         # tests (+ test/utils helpers, test/invariant handlers)
 ├── script/       # deploy scripts (Foundry Script)
 └── lib/          # dependencies (git-ignored; restore with `make contracts-deps`)
 ```

@@ -29,7 +29,7 @@ contract AMMHandler is Test {
         amount = bound(amount, 1, balance);
 
         vm.prank(actor);
-        market.buy(outcomeSeed % 2 == 0 ? Outcome.Yes : Outcome.No, amount);
+        market.buy(outcomeSeed % 2 == 0 ? Outcome.Yes : Outcome.No, amount, 0, type(uint256).max);
     }
 
     function sell(uint256 outcomeSeed, uint256 amount) external {
@@ -44,7 +44,7 @@ contract AMMHandler is Test {
         if (collateralOut == 0) return;
 
         vm.prank(actor);
-        market.sell(outcome, amount);
+        market.sell(outcome, amount, 0, type(uint256).max);
     }
 
     function split(uint256 amount) external {

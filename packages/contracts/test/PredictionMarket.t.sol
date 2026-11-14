@@ -14,11 +14,12 @@ contract PredictionMarketTest is Test {
     address internal creator = makeAddr("creator");
     address internal resolver = makeAddr("resolver");
     address internal stranger = makeAddr("stranger");
+    address internal treasury = makeAddr("treasury");
 
     function setUp() public {
         vm.warp(1_700_000_000);
         usdc = new MockUSDC(address(this));
-        factory = new MarketFactory(address(usdc));
+        factory = new MarketFactory(address(usdc), treasury);
     }
 
     function _config() internal view returns (MarketConfig memory config) {

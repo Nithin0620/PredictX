@@ -1,186 +1,163 @@
-# PredictX — Project Plan (What We're Building & How)
+# PredictX Lite — Project Plan (Student Resume Version)
 
-> Execution roadmap lives in `PHASES.md` (20 phases, sub-levels, exit criteria).
-> This document is the **single source of truth** for _what_ PredictX is, _why_ it exists,
-> _what is in/out of scope_, and _how the pieces fit together_.
-
----
-
-## 1. What is PredictX?
-
-**PredictX** is a decentralized, oracle-powered **binary prediction market** on **Base Sepolia
-(testnet only)**. Users:
-
-1. Create YES/NO markets on objective future events (e.g. _"Will ETH be above $5,000 on 2027-12-31?"_).
-2. Trade YES/NO shares against an on-chain **CPMM automated market maker** that discovers an
-   implied probability.
-3. Provide liquidity and earn trading fees.
-4. Let an **oracle** resolve the market (Chainlink price feed for objective markets, a manual
-   resolver fallback otherwise).
-5. Go through a short **dispute window**, then **finalize**.
-6. **Redeem** winning shares for 1 test-USDC each.
-
-Everything financial (trading, liquidity, settlement) is enforced **on-chain**. Off-chain
-infrastructure only provides **fast reads, discovery, analytics, and UX**.
-
-**One-line pitch:** _A Polymarket-style prediction market with real outcome tokens, an AMM,
-oracle resolution, and a reorg-safe event-driven backend — built end to end on Base Sepolia._
+> **Active plan:** PredictX Lite. The original full protocol is intentionally deferred; the
+> existing full contract implementation remains in this repo as an advanced reference.
+> Execution roadmap: `PHASES.md` (4 phases).
 
 ---
 
-## 2. Why this project (why it's a strong portfolio piece)
+## 1. What is PredictX Lite?
 
-- **On-chain financial logic** — not just CRUD on a blockchain.
-- **Real market microstructure** — AMM pricing, slippage, fees, liquidity, solvency invariants.
-- **Oracles** — the genuinely hard part of prediction markets.
-- **Event-driven backend** — indexers, cursors, reorgs, idempotency, workers.
-- **Full-stack product** — wallet auth (SIWE), realtime UI, portfolio/PnL, resolution flows.
+**PredictX Lite** is a small, end-to-end **parimutuel binary prediction market** on **Base Sepolia**
+(testnet only). Users:
 
-It demonstrates that you can **coordinate on-chain state with off-chain systems** — the thing
-most "Web3 CRUD" projects never touch.
+1. Create YES/NO markets on objective future events.
+2. Bet mock USDC on YES or NO.
+3. Wait for the deadline.
+4. Let a trusted resolver choose YES or NO.
+5. Winners claim a pro-rata share of the total pool.
+
+**One-line pitch:** _A student-sized prediction market with USDC betting, manual resolution,
+pro-rata payouts, and a Next.js frontend — deployed on Base Sepolia._
+
+This is deliberately **not** a full DeFi protocol. It is a focused portfolio project that can be
+built, tested, deployed, and demoed in about four weeks.
+
+---
+
+## 2. Why this version
+
+- It keeps the most interesting part of PredictX: **on-chain money and market settlement**.
+- It removes the parts that dominate build time without adding much resume value for a student:
+  AMM math, LP accounting, oracle integration, disputes, backend indexing, and queues.
+- It is small enough to finish, explain, and defend in an interview.
+- It still demonstrates Solidity, ERC-20 handling, access control, state transitions, rounding,
+  Foundry testing, deployment, and frontend integration.
+
+**Rule:** if a feature is not required for the loop
+`create → bet → resolve → claim`, it is not in Lite.
 
 ---
 
 ## 3. Scope
 
-### 3.1 In scope (MVP → launch)
+### 3.1 In scope
 
-| Area       | Included                                                                   |
-| ---------- | -------------------------------------------------------------------------- |
-| Markets    | Binary YES/NO only, permissionless creation                                |
-| Tokens     | ERC-20 YES/NO outcome tokens + LP token + mock USDC (6 decimals)           |
-| Pricing    | CPMM (`x·y=k`) with configurable fee, fully collateralized                 |
-| Trading    | Buy/sell with slippage + deadline protection                               |
-| Liquidity  | Add/remove liquidity, LP fees                                              |
-| Resolution | Chainlink price-feed markets + manual resolver fallback                    |
-| Disputes   | One bonded propose/challenge round + admin arbiter                         |
-| Settlement | Winner redeems 1 USDC/share, double-claim protection                       |
-| Backend    | REST API, Neon Postgres, reorg-safe indexer, BullMQ workers, notifications |
-| Realtime   | WebSocket/SSE probability + trade feed                                     |
-| Frontend   | Discovery, market detail, trade, create, portfolio, resolve, claim         |
-| Ops        | Base Sepolia deploy, CI, monitoring, docs, demo                            |
+| Area       | Included                                                        |
+| ---------- | --------------------------------------------------------------- |
+| Markets    | Binary YES/NO, permissionless creation                          |
+| Collateral | Mock USDC, 6 decimals                                           |
+| Betting    | One or more bets per user on YES or NO                          |
+| Pricing    | Parimutuel pools, no AMM                                        |
+| Resolution | Trusted resolver address, manual YES/NO choice                  |
+| Settlement | Winners split the total pool pro-rata; losers receive nothing   |
+| Frontend   | Market list, market detail, create market, bet, resolve, claim  |
+| Chain      | Base Sepolia only                                               |
+| Ops        | Foundry tests, verified deploy, README, screenshots, demo video |
 
-### 3.2 Explicitly out of scope (and why)
+### 3.2 Explicitly out of scope
 
-| Excluded                             | Reason                                                        |
-| ------------------------------------ | ------------------------------------------------------------- |
-| Mainnet / real money                 | Regulatory + safety. Testnet + mock USDC only.                |
-| Non-binary / multi-outcome markets   | 3× complexity; binary proves the concept.                     |
-| CLOB order book / LMSR               | CPMM is proven and far cheaper to build correctly.            |
-| Full decentralized arbitration (UMA) | Bonded round + arbiter is enough; document as future work.    |
-| Sports / subjective markets          | Resolution + dispute nightmare; objective price markets only. |
-| AI as a resolver                     | AI is _insights only_, never authoritative.                   |
-| Mobile app                           | Responsive web suffices.                                      |
+| Excluded                        | Reason                                            |
+| ------------------------------- | ------------------------------------------------- |
+| AMM / CPMM pricing              | Parimutuel pools are enough for the Lite story.   |
+| LP tokens / liquidity provision | Removes the hardest accounting surface.           |
+| Protocol fees                   | No treasury or fee-split complexity.              |
+| Chainlink oracle                | Trusted resolver is acceptable for a student MVP. |
+| Disputes / bonded arbitration   | Deferred to the advanced version.                 |
+| Backend / indexer / database    | Direct RPC reads are enough for small markets.    |
+| Redis / BullMQ / workers        | No background jobs needed.                        |
+| SIWE auth / sessions            | Wallet connection is the only identity.           |
+| Upgradeable contracts           | Immutable contracts are simpler and safer here.   |
+| Mainnet / real money            | Testnet and mock USDC only.                       |
+| Multi-outcome markets           | Binary only.                                      |
 
-**Rule:** anything not required for the demo loop _faucet → trade → resolve → claim_ is deferred.
+**Known Lite limitations (document these honestly):**
+
+- The resolver is trusted. If the resolver never acts, funds remain locked.
+- There is no dispute path. A wrong resolution cannot be challenged on-chain.
+- Rounding dust from pro-rata payouts stays in the market contract.
+- Losing stakes are not refunded; they fund the winners.
+- The contract is testnet-only and not audited.
 
 ---
 
 ## 4. System architecture
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                            Browser (Next.js)                          │
-│  thirdweb SDK (wallet + reads/writes) · TanStack Query · SIWE cookie   │
-│  Markets · Trade · Portfolio · Create · Resolve · Claim · Realtime     │
-└───────────────┬───────────────────────────────┬──────────────────────┘
-                │ REST (read) + WS/SSE          │ wallet txs (write)
-                ▼                               ▼
-┌───────────────────────────────┐   ┌──────────────────────────────────┐
-│        Backend (Express)       │   │      Base Sepolia (EVM)           │
-│  auth (SIWE) · markets ·       │   │  MarketFactory · PredictionMarket │
-│  trading · portfolio ·         │   │  OutcomeToken (YES/NO) · AMM · LP │
-│  analytics · resolution        │   │  OracleResolver (Chainlink)       │
-│                                │   │  MockUSDC · DisputeManager        │
-│  ┌──────────────────────────┐  │   └────────────▲─────────────────────┘
-│  │ Indexer (viem getLogs)    │──┼────────────────┘ events / reads
-│  │ cursor · finality · reorg │  │
-│  └──────────────────────────┘  │
-│  ┌──────────────────────────┐  │
-│  │ BullMQ workers            │  │
-│  │ event-sync · resolution · │  │
-│  │ notifications             │  │
-│  └──────────────────────────┘  │
-└───────┬───────────────┬────────┘
-        ▼               ▼
-┌──────────────┐ ┌──────────────┐
-│ Neon Postgres│ │ Redis        │
-│ (indexed     │ │ (queues +    │
-│  chain state)│ │  pub/sub)    │
-└──────────────┘ └──────────────┘
+```text
+┌──────────────────────────────────────────────┐
+│              Browser (Next.js)               │
+│  wagmi + viem · wallet connect · Tailwind    │
+│  Markets · Create · Bet · Resolve · Claim    │
+└───────────────┬──────────────────────────────┘
+                │ direct RPC reads + wallet txs
+                ▼
+┌──────────────────────────────────────────────┐
+│            Base Sepolia (EVM)                │
+│  MockUSDC                                    │
+│  PredictXFactory ──deploys──► PredictXMarket │
+│  PredictXMarket: pools, resolution, claims   │
+└──────────────────────────────────────────────┘
 ```
 
-**Trust model:** the chain is authoritative for balances, trades, and settlement. The database is a
-**fast, rebuildable index** of chain state. The backend **never** decides outcomes.
+There is **no backend**. The chain is the source of truth. The frontend reads factory and market
+state directly from Base Sepolia and sends wallet transactions.
+
+**Trust model:** the resolver is trusted to report the correct outcome. Users trust the contract to
+hold funds and pay winners according to the parimutuel formula.
 
 ---
 
 ## 5. Technology stack
 
-| Layer           | Choice                                                                                          | Notes                                                   |
-| --------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| Chain           | **Base Sepolia**                                                                                | Cheap, EVM, Chainlink feeds available                   |
-| Contracts       | **Solidity ^0.8.24 + Foundry**                                                                  | Fast tests, fuzzing, invariants                         |
-| Contract deploy | **thirdweb CLI** (`npx thirdweb deploy`)                                                        | Deploys top-level contracts; Foundry still owns testing |
-| Contract libs   | **OpenZeppelin Contracts**                                                                      | ERC-20, AccessControl, ReentrancyGuard, SafeERC20       |
-| Oracle          | **Chainlink Price Feeds** (+ manual resolver)                                                   | Objective markets only                                  |
-| Backend         | **Node.js + TypeScript + Express**                                                              | Zod validation, pino logging                            |
-| ORM/DB          | **Prisma + Neon Postgres**                                                                      | Serverless Postgres, migrations, typed queries          |
-| Queue/cache     | **Redis + BullMQ**                                                                              | Workers, retries, pub/sub                               |
-| Chain client    | **thirdweb SDK (frontend) · viem (backend indexer)**                                            | thirdweb v5 is built on viem                            |
-| Auth            | **SIWE → JWT session cookie**                                                                   | Wallet is identity                                      |
-| Realtime        | **WebSocket / SSE**                                                                             | Probability + trade feed                                |
-| Frontend        | **Next.js (App Router) + TypeScript**                                                           | SSR + client components                                 |
-| Web3 UI         | **thirdweb SDK** (`ConnectButton`, `useActiveAccount`, `useReadContract`, `useSendTransaction`) | Replaces wagmi + RainbowKit                             |
-| UI              | **Tailwind CSS + shadcn/ui + Recharts**                                                         | Fast, consistent design                                 |
-| Monorepo        | **pnpm workspaces + Turborepo**                                                                 | One install/build/test                                  |
-| CI/CD           | **GitHub Actions**                                                                              | Lint, typecheck, test, deploy                           |
-| Deploy          | **Vercel (web) · Fly/Railway (API) · Neon Postgres · managed Redis**                            |                                                         |
-| Monitoring      | **Sentry + uptime + indexer-lag metric**                                                        |                                                         |
+| Layer          | Choice                                           | Notes                                  |
+| -------------- | ------------------------------------------------ | -------------------------------------- |
+| Chain          | **Base Sepolia**                                 | Testnet only                           |
+| Contracts      | **Solidity 0.8.24 + Foundry**                    | Unit tests and fuzz tests              |
+| Contract libs  | **OpenZeppelin Contracts**                       | ERC-20, SafeERC20, ReentrancyGuard     |
+| Collateral     | **MockUSDC**                                     | 6 decimals, owner mint / faucet        |
+| Frontend       | **Next.js App Router + TypeScript**              | No backend                             |
+| Web3 client    | **wagmi + viem**                                 | Reads and writes                       |
+| Wallet UI      | **RainbowKit or ConnectKit**                     | Wallet connection                      |
+| Styling        | **Tailwind CSS**                                 | Keep the UI small                      |
+| Deployment     | **Foundry script + Basescan verification**       | Contracts                              |
+| Web deployment | **Vercel**                                       | Frontend                               |
+| Repo           | **Single small repo or `predictx-lite/` folder** | No Turborepo, no monorepo for this MVP |
 
 ---
 
 ## 6. Repository layout
 
+```text
+predictx-lite/
+├── contracts/
+│   ├── foundry.toml
+│   ├── remappings.txt
+│   ├── src/
+│   │   ├── MockUSDC.sol
+│   │   ├── PredictXMarket.sol
+│   │   └── PredictXFactory.sol
+│   ├── test/
+│   │   ├── PredictXMarket.t.sol
+│   │   └── PredictXFactory.t.sol
+│   └── script/
+│       └── DeployLite.s.sol
+├── web/
+│   ├── app/
+│   │   ├── page.tsx
+│   │   ├── create/page.tsx
+│   │   └── market/[address]/page.tsx
+│   ├── components/
+│   │   ├── MarketCard.tsx
+│   │   ├── BetForm.tsx
+│   │   └── ClaimButton.tsx
+│   ├── lib/
+│   │   ├── contracts.ts
+│   │   └── wagmi.ts
+│   └── .env.local.example
+└── README.md
 ```
-PredictX/
-├── PHASES.md                    # 20-phase execution roadmap
-├── PROJECT_PLAN.md              # this file
-├── docs/
-│   ├── adr/                     # architecture decision records
-│   ├── vision.md
-│   ├── state-machine.md
-│   ├── amm.md
-│   ├── resolution.md
-│   ├── security.md
-│   └── demo-script.md
-├── apps/  (or packages/)
-│   ├── contracts/
-│   │   ├── src/
-│   │   │   ├── MockUSDC.sol
-│   │   │   ├── MarketFactory.sol
-│   │   │   ├── PredictionMarket.sol
-│   │   │   ├── OutcomeToken.sol
-│   │   │   ├── AMM.sol
-│   │   │   ├── LPToken.sol
-│   │   │   ├── OracleResolver.sol
-│   │   │   └── DisputeManager.sol
-│   │   ├── test/  (unit · integration · invariant · fork)
-│   │   └── script/ (deploy)
-│   ├── backend/
-│   │   ├── src/
-│   │   │   ├── modules/ (auth, markets, trading, portfolio, analytics, resolution)
-│   │   │   ├── blockchain/ (contracts, listeners, indexer)
-│   │   │   ├── workers/ (event-sync, market-resolution, notification)
-│   │   │   ├── realtime/
-│   │   │   ├── database/
-│   │   │   └── server.ts
-│   │   └── prisma/schema.prisma
-│   ├── web/
-│   │   └── src/app/ (markets, market/[id], portfolio, create, resolve)
-│   └── shared/                  # ABIs, types, constants, addresses
-└── .github/workflows/ci.yml
-```
+
+Keep the full PredictX repo separate. Do not mix Lite contracts into the full 20-phase codebase.
 
 ---
 
@@ -188,331 +165,347 @@ PredictX/
 
 ### 7.1 `MockUSDC.sol`
 
-- ERC-20, **6 decimals**, `mint()` faucet (rate-limited on testnet).
-- Collateral for all markets.
+- ERC-20 with 6 decimals.
+- Owner can mint for tests and demos.
+- Optional public faucet with a cooldown.
+- Never use as a real stablecoin.
 
-### 7.2 `MarketFactory.sol`
+### 7.2 `PredictXMarket.sol`
 
-- `createMarket(MarketConfig) → marketId`
-- Deploys a `PredictionMarket` (+ its YES/NO tokens), registers it.
-- Emits `MarketCreated(marketId, market, creator, question, deadline)`.
-- Permissionless creation with config validation + optional anti-spam guard.
+One contract per market.
 
-### 7.3 `PredictionMarket.sol`
+**State**
 
-Owns lifecycle + collateral vault.
+```solidity
+enum Outcome {
+    Unresolved,
+    Yes,
+    No
+}
 
-**State machine**
+IERC20 public immutable collateral;
+address public immutable creator;
+address public immutable resolver;
+uint64 public immutable deadline;
+string public question;
 
+uint256 public totalYes;
+uint256 public totalNo;
+Outcome public outcome;
+
+mapping(address => uint256) public yesStake;
+mapping(address => uint256) public noStake;
+mapping(address => bool) public claimed;
 ```
-Created ──seedLiquidity──► Active ──close()──► Closed
-   │                          │                  │
-   │                          │                  ▼
-   │                          │            Proposed ──dispute()──► Disputed
-   │                          │                  │                     │
-   │                          │                  ▼                     ▼
-   │                          │             Finalized ◄──── arbiter ruling
-   │                          │                  │
-   └──────────────────────────┴──────────────────┘  (all states → claimable after Finalized)
+
+**Functions**
+
+```solidity
+function bet(Outcome side, uint256 amount) external;
+function resolve(Outcome result) external;
+function claim() external returns (uint256 payout);
 ```
 
-- `split(amount)` → mint `amount` YES + `amount` NO (locks USDC).
-- `merge(amount)` → burn `amount` YES + `amount` NO → return USDC.
-- `buy/sell` delegate to AMM.
-- `proposeOutcome / disputeOutcome / finalize`.
-- `redeem()` → winner burns shares → 1 USDC each, once.
-- Invariant: `usdc.balanceOf(market) ≥ totalSupply(YES)`.
+**Rules**
 
-### 7.4 `OutcomeToken.sol`
+- `bet` reverts on zero amount, `Unresolved`, after deadline, or after resolution.
+- `bet` pulls USDC with `SafeERC20` and updates the correct pool.
+- `resolve` is resolver-only, allowed at or after the deadline, and cannot run twice.
+- `resolve` rejects `Unresolved`.
+- `claim` is allowed only after resolution.
+- Losing users cannot claim.
+- A user can claim only once.
+- No admin function can withdraw user funds.
 
-- Standard ERC-20 per outcome (YES and NO), minted/burned only by the market.
+**Events**
 
-### 7.5 `AMM.sol`
+```solidity
+event Bet(address indexed user, Outcome indexed side, uint256 amount);
+event Resolved(Outcome indexed outcome, address indexed resolver);
+event Claimed(address indexed user, uint256 payout);
+```
 
-- Holds YES/NO reserves; constant product `x·y=k`.
-- `quoteBuy / quoteSell` (view) + `swap` (internal).
-- Fee split: LP share + protocol treasury share.
-- Invariant: `k` never decreases; pool always fully backed by collateral.
-- Implied probability: `pYes = reserveNo / (reserveYes + reserveNo)`.
+### 7.3 `PredictXFactory.sol`
 
-### 7.6 `LPToken.sol`
+- Stores the mock USDC address.
+- Deploys a new `PredictXMarket` per market.
+- Assigns sequential market IDs.
+- Stores `marketId → market address`.
+- Emits `MarketCreated`.
+- Exposes `getMarkets()` for the frontend.
 
-- ERC-20 representing proportional pool ownership.
-- Minted on `addLiquidity`, burned on `removeLiquidity`.
+```solidity
+function createMarket(
+    string calldata question,
+    uint64 deadline,
+    address resolver
+) external returns (address market);
 
-### 7.7 `OracleResolver.sol`
+function getMarkets() external view returns (address[] memory);
+```
 
-- Wraps Chainlink `AggregatorV3Interface`.
-- Encodes `(feed, comparator, threshold, deadline)`.
-- `resolveFromFeed()` with **staleness + decimals + non-positive answer** checks.
-- Calls `market.proposeOutcome()`; never pays out directly.
+### 7.4 Deployment model
 
-### 7.8 `DisputeManager.sol`
-
-- `proposeOutcome` requires a bond; `disputeOutcome` requires a matching bond.
-- Dispute window → `finalize()`, or arbiter resolves disputed markets.
-- Bond slashing: honest party rewarded, dishonest party slashed; bonds conserved.
+- One factory for all markets.
+- One market contract per question.
+- No clones or proxies. Simplicity over gas optimization.
+- Factory has no owner privileges over market funds.
 
 ---
 
-## 8. Core math (the part that must be right)
+## 8. Core math
 
-### 8.1 Full collateralization
+### 8.1 Parimutuel pools
 
-```
-1 USDC ──split──► 1 YES + 1 NO
-1 YES + 1 NO ──merge──► 1 USDC
-```
-
-So at all times: `collateralHeld ≥ outstanding YES + outstanding NO` (in the fully-split model).
-
-### 8.2 CPMM trade (buy YES)
-
-```
-1. User sends C collateral.
-2. Contract splits C → C YES + C NO.
-3. NO leg is added to the pool reserves.
-4. YES leg (minus pool output) is sent to the buyer.
-5. x·y ≥ k is enforced after the swap; fee is taken from the output.
+```text
+totalPool = totalYes + totalNo
 ```
 
-Selling is the reverse (return shares to the pool, receive the opposite leg, merge → USDC).
+All bets are held by the market contract. There is no pricing curve.
 
-### 8.3 Implied probability
+### 8.2 Payout
 
-```
-pYes = reserveNo / (reserveYes + reserveNo)      ∈ (0, 1)
-pNo  = 1 - pYes
-```
+```text
+if outcome == Yes:
+    payout = yesStake[user] * totalPool / totalYes
 
-A trade that buys YES raises `pYes`; selling lowers it.
-
-### 8.4 Payouts (after finalization)
-
-```
-payout(user) = winningShares(user) × 1 USDC      (claimable once)
-losingShares → 0
-LP redeems its pro-rata share of residual collateral after claims
+if outcome == No:
+    payout = noStake[user] * totalPool / totalNo
 ```
 
-Dust from rounding is absorbed by the protocol treasury (documented).
+- Winners receive a pro-rata share of the entire pool.
+- Losers receive nothing.
+- The more the winning side is outnumbered, the larger the winner payout.
+
+### 8.3 Rounding
+
+Solidity integer division rounds down. That means:
+
+```text
+sum(all payouts) <= totalPool
+```
+
+The difference is **dust** that remains in the market contract. This is acceptable for Lite and must
+be documented in the README.
+
+### 8.4 Implied probability display
+
+For UI only:
+
+```text
+pYes ≈ totalYes / (totalYes + totalNo)
+pNo  ≈ totalNo  / (totalYes + totalNo)
+```
+
+This is a pool-implied estimate, not a trade price.
 
 ---
 
-## 9. Market resolution design
+## 9. Resolution design
 
-**Objective markets only (MVP).** Example criteria:
-
-> "ETH/USD (Chainlink feed `0x…`) close price on 2027-12-31 ≥ $5,000."
-
-Resolution flow:
-
-```
+```text
 deadline reached
-  → close()                       (anyone)
-  → resolver.proposeOutcome()     (Chainlink read, or manual resolver)
-  → dispute window (e.g. 2h testnet / 24h realistic)
-      ├─ no dispute → finalize()  (anyone)
-      └─ dispute + bonds → arbiter ruling → finalize()
-  → redeem() unlocks
+  → resolver calls resolve(Yes or No)
+  → outcome is stored
+  → winners call claim()
 ```
 
-**Trust assumptions (documented in `docs/security.md`):**
+- The resolver is an address chosen when the market is created.
+- For the demo, the market creator can be the resolver.
+- Resolution is allowed at or after the deadline.
+- There is no close transaction; the deadline is enforced by `bet`.
+- There is no dispute window in Lite.
+- If the resolver never resolves, the market stays unresolved and funds stay locked.
 
-- Chainlink feed is honest and fresh; staleness reverts.
-- Manual resolver is trusted for non-price markets.
-- Arbiter is trusted for disputed markets (future work: UMA/Optimistic Oracle).
-- AI never has resolution authority.
-
----
-
-## 10. Backend design
-
-### 10.1 Modules
-
-| Module       | Responsibility                                |
-| ------------ | --------------------------------------------- |
-| `auth`       | SIWE challenge/verify, session issuance       |
-| `markets`    | list, filter, detail, search, pagination      |
-| `trading`    | quote + unsigned tx payloads for the frontend |
-| `portfolio`  | positions, PnL, claimable, history            |
-| `analytics`  | volume, probability history, leaderboards     |
-| `resolution` | resolution status, evidence, dispute info     |
-| `realtime`   | WS/SSE publish + subscribe                    |
-
-### 10.2 Database schema (indexed chain state)
-
-| Table              | Key fields                                                                   |
-| ------------------ | ---------------------------------------------------------------------------- |
-| `users`            | id, wallet_address, created_at                                               |
-| `markets`          | id, onchain_id, question, deadline, status, resolver_type, feed, threshold   |
-| `outcomes`         | id, market_id, label (YES/NO), token_address                                 |
-| `positions`        | user_id, market_id, outcome, shares, avg_price                               |
-| `trades`           | tx_hash, log_index, market_id, user_id, side, shares, collateral, fee, price |
-| `liquidity_events` | tx_hash, log_index, market_id, user_id, type, amount, lp_tokens              |
-| `resolutions`      | market_id, proposed_outcome, proposer, evidence_url, proposed_at             |
-| `disputes`         | market_id, disputer, bond, outcome, created_at, resolved_at                  |
-| `transactions`     | tx_hash, block_number, block_hash, status, finalized                         |
-| `event_cursors`    | contract, last_block, last_block_hash                                        |
-| `market_stats`     | market_id, volume, open_interest, last_price, p_yes                          |
-| `notifications`    | user_id, type, payload, read_at                                              |
-
-### 10.3 Indexer guarantees
-
-- **Ordered:** process logs in block order.
-- **Idempotent:** upsert keyed by `(tx_hash, log_index)`.
-- **Reorg-safe:** finality lag + parent-hash check + rollback of unfinalized rows.
-- **Resumable:** persisted cursor; restart continues exactly where it stopped.
-- **Rebuildable:** DB can be fully rebuilt from chain history.
-
-### 10.4 Workers (BullMQ)
-
-- `event-sync` — safety-net polling + gap recovery.
-- `market-resolution` — triggers resolution for matured markets.
-- `notification` — trade/close/resolution/claim notifications.
-- Retries + exponential backoff + dead-letter queue.
+This is a deliberate trust tradeoff. Document it clearly and mention oracle/dispute systems as future
+work.
 
 ---
 
-## 11. Frontend design
+## 10. Frontend design
 
 ### Routes
 
-| Route           | Purpose                                                        |
-| --------------- | -------------------------------------------------------------- |
-| `/`             | Market discovery (cards, filters, search)                      |
-| `/market/[id]`  | Probability chart, trade form, liquidity, criteria, resolution |
-| `/create`       | Create a market                                                |
-| `/portfolio`    | Positions, PnL, claimable, history                             |
-| `/resolve/[id]` | Propose/dispute/finalize/claim (role-aware)                    |
-| `/faucet`       | Mint mock USDC                                                 |
+| Route               | Purpose                                   |
+| ------------------- | ----------------------------------------- |
+| `/`                 | List markets, show pools and status       |
+| `/market/[address]` | Market detail, bet YES/NO, resolve, claim |
+| `/create`           | Create a market                           |
 
-### Key UX flows
+### Market list
 
-1. **Onboarding:** connect wallet → SIWE sign-in → faucet.
-2. **Trade:** pick market → quote → approve USDC → buy → optimistic update + realtime price.
-3. **Resolve:** deadline passes → resolution status → (dispute if needed) → finalize.
-4. **Claim:** claimable badge → redeem → balance update.
+- Read `factory.marketCount()`.
+- Read each `factory.markets(id)`.
+- Use `useReadContracts` to batch market details.
+- No database and no indexer.
 
----
+### Market detail
 
-## 12. Security & correctness model
+Show:
 
-- **Reentrancy:** `ReentrancyGuard` + checks-effects-interactions on all value flows.
-- **Access control:** `AccessControl` for resolver/arbiter/treasury roles.
-- **Math:** Solidity 0.8 checked arithmetic + explicit rounding direction.
-- **Invariants (tested):** collateralization, `k` non-decrease, payout solvency, bond conservation.
-- **Slippage/deadline:** every trade reverts on violation.
-- **Oracle safety:** staleness + decimals + non-positive answer checks.
-- **Idempotency:** indexer + workers dedupe by `(tx_hash, log_index)` / job key.
-- **Secrets:** env only; `.env.example` committed, real `.env` never.
-- **Testnet only:** no real funds, mock USDC with a faucet.
+- question
+- deadline
+- total YES pool
+- total NO pool
+- implied percentages
+- user’s YES/NO stakes
+- bet form
+- resolve button if the connected wallet is the resolver
+- claim button if resolved and the user has a winning stake
 
-Known limitations (documented, not hidden): trusted arbiter, trusted manual resolver, contract-per-market
-gas cost, dust handling, no formal audit.
+### Create market
 
----
+Inputs:
 
-## 13. Testing strategy
+- question
+- deadline
+- resolver address
 
-| Layer                 | Tool                        | Coverage target                  |
-| --------------------- | --------------------------- | -------------------------------- |
-| Contracts unit        | Foundry                     | >90% core                        |
-| Contracts integration | Foundry                     | full trade→resolve→claim         |
-| Contracts invariants  | Foundry fuzz/invariant      | collateral, `k`, solvency, bonds |
-| Oracle                | Foundry fork (Base Sepolia) | feed resolution + stale revert   |
-| Indexer               | Anvil + test DB             | replay, idempotency, reorg       |
-| Backend API           | Vitest/Supertest            | module endpoints                 |
-| E2E                   | Playwright                  | connect→faucet→trade→claim       |
-| Static analysis       | Slither                     | zero unjustified findings        |
+Submit `factory.createMarket(...)`.
+
+### UX requirements
+
+- Wrong network prompt.
+- Transaction pending / success / error states.
+- Disable bet buttons after deadline.
+- Show “You lose this stake if the other side wins.”
+- Show the resolver address and the trust warning.
+- Show claimable amount before claiming.
 
 ---
 
-## 14. Deployment topology
+## 11. Security and correctness
 
+- Use `SafeERC20` for all token transfers.
+- Use `ReentrancyGuard` on `bet` and `claim`.
+- Use custom errors with clear names.
+- Use checks-effects-interactions ordering.
+- No admin withdrawal path.
+- No upgradeability.
+- No `tx.origin`.
+- No unbounded loops in state-changing functions.
+- Validate zero addresses, zero amounts, empty questions, and past deadlines.
+- Test rounding and double-claim behavior.
+- Test with multiple users and both outcomes.
+- Document that the contract is unaudited and testnet-only.
+
+---
+
+## 12. Testing strategy
+
+| Layer                  | Tool       | Target                                      |
+| ---------------------- | ---------- | ------------------------------------------- |
+| Market unit tests      | Foundry    | create, bet, resolve, claim, reverts        |
+| Factory tests          | Foundry    | IDs, registry, invalid inputs               |
+| Payout math            | Foundry    | YES winner, NO winner, rounding, no overpay |
+| Access control         | Foundry    | resolver-only resolution                    |
+| Fuzz                   | Foundry    | payout never exceeds pool                   |
+| Frontend smoke test    | Manual     | connect → bet → resolve → claim             |
+| Optional frontend test | Playwright | one happy-path flow                         |
+
+Target: **15–25 Foundry tests** and **>90% coverage on Lite contracts**.
+
+---
+
+## 13. Deployment
+
+1. Deploy `MockUSDC` to Base Sepolia.
+2. Deploy `PredictXFactory` with the USDC address.
+3. Verify both contracts on Basescan.
+4. Set frontend environment variables:
+
+```bash
+NEXT_PUBLIC_FACTORY_ADDRESS=0x...
+NEXT_PUBLIC_USDC_ADDRESS=0x...
+NEXT_PUBLIC_CHAIN_ID=84532
 ```
-Contracts  → Base Sepolia (deploy via thirdweb CLI, verified on Basescan)
-Frontend   → Vercel
-Backend    → Fly.io / Railway (Docker)
-Postgres   → Neon (serverless Postgres; pooled connection for runtime, direct for migrations)
-Redis      → managed (Upstash/Railway)
-Workers    → same container or separate process
-Monitoring → Sentry + uptime + indexer-lag alert
-```
 
-Production checklist: env vars set, contracts verified, addresses in `packages/shared`, indexer
-caught up, workers running, alerts firing, demo markets seeded.
+5. Create 3–5 demo markets.
+6. Bet from 2–3 wallets.
+7. Resolve one market YES and one market NO.
+8. Claim from both winning wallets.
+9. Record a 2-minute demo.
 
 ---
 
-## 15. Roadmap mapping
+## 14. Roadmap mapping
 
-The 20 phases in `PHASES.md` map to this plan as:
+The 4 phases in `PHASES.md` map to this plan as:
 
-| Plan area                    | Phases |
-| ---------------------------- | ------ |
-| Foundations & tooling        | 1–2    |
-| Chain & contract scaffolding | 3      |
-| Collateral + factory         | 4      |
-| Lifecycle state machine      | 5      |
-| Outcome tokens               | 6      |
-| AMM pricing                  | 7      |
-| Trading                      | 8      |
-| Liquidity                    | 9      |
-| Settlement & claim           | 10     |
-| Oracle                       | 11     |
-| Disputes                     | 12     |
-| Hardening & tests            | 13     |
-| Backend foundation           | 14     |
-| Indexer                      | 15     |
-| Modules + workers            | 16     |
-| Realtime                     | 17     |
-| Frontend foundation          | 18     |
-| Frontend product             | 19     |
-| Advanced + deploy            | 20     |
+| Plan area                  | Phase |
+| -------------------------- | ----- |
+| Core contracts             | 1     |
+| Tests and local deployment | 2     |
+| Frontend                   | 3     |
+| Testnet deploy and polish  | 4     |
 
 ---
 
-## 16. Success criteria (the demo)
+## 15. Success criteria
 
 A reviewer should be able to, unaided:
 
-1. Open the deployed app, connect a Base Sepolia wallet.
+1. Open the deployed app and connect a Base Sepolia wallet.
 2. Get mock USDC from the faucet.
-3. Open a market and see its implied probability.
-4. Buy YES, watch the probability move in real time.
-5. (Admin/resolver) see a matured market resolve via Chainlink.
-6. After finalization, claim winnings.
-7. See the trade and payout reflected in the portfolio and on Basescan.
+3. Create a market with a question, deadline, and resolver.
+4. Bet YES or NO.
+5. See the pools update.
+6. Resolve a matured market as the resolver.
+7. Claim winnings as a winner.
+8. See the losing side receive nothing.
+9. Inspect the transactions on Basescan.
 
-If all seven work smoothly, PredictX is a success.
+If all nine work smoothly, PredictX Lite is a success.
 
 ---
 
-## 17. Resume / interview framing
+## 16. Resume / interview framing
 
-- **"Built a decentralized prediction market (Solidity, Foundry, Base Sepolia) with ERC-20 outcome
-  tokens, a fully-collateralized CPMM AMM, and Chainlink oracle resolution."**
-- **"Designed a reorg-safe event indexer (viem + Neon Postgres) with cursors, idempotent upserts, and
-  rollback, plus BullMQ workers for resolution and notifications."**
-- **"Enforced financial invariants (collateralization, constant-product, payout solvency) via Foundry
-  fuzz/invariant testing."**
-- **"Shipped a full-stack Next.js + thirdweb product with SIWE auth, realtime probability updates, and
-  end-to-end Playwright coverage."**
+- **"Built and deployed PredictX Lite, a parimutuel binary prediction market on Base Sepolia, with
+  USDC betting, manual resolution, and pro-rata winner claims."**
+- **"Wrote a Foundry test suite covering market creation, betting, resolution, double-claim
+  prevention, access control, and payout rounding."**
+- **"Built a Next.js + wagmi frontend that reads markets directly from chain and supports
+  wallet-based betting, resolution, and claiming without a backend."**
+- **"Documented the trust model and known limitations of a trusted-resolver prediction market."**
+
+Interview talking points:
+
+- Why parimutuel instead of an AMM for a first version.
+- Why the contract holds funds and why there is no admin withdrawal.
+- How rounding works and why dust remains.
+- Why a trusted resolver is acceptable for a testnet MVP.
+- What you would add next: outcome tokens, AMM, oracle, disputes, indexer.
+
+---
+
+## 17. Relationship to full PredictX
+
+The full PredictX code in this repo is the **advanced reference**:
+
+- AMM pricing
+- LP tokens
+- outcome tokens
+- oracle resolution
+- dispute/finalization flow
+- backend indexer and workers
+- full web app
+
+Do not try to strip the full contracts in place. Build Lite as a separate, clean project. If Lite
+ships successfully, the full version becomes a “future work / advanced version” section in your
+portfolio.
 
 ---
 
 ## 18. Glossary
 
-| Term                | Meaning                                                        |
-| ------------------- | -------------------------------------------------------------- |
-| Outcome token       | ERC-20 representing a YES or NO share                          |
-| Split / Merge       | Convert 1 USDC ↔ 1 YES + 1 NO                                  |
-| CPMM                | Constant-product market maker (`x·y=k`)                        |
-| Implied probability | Price of YES ≈ market's probability estimate                   |
-| Resolution          | Determining the true outcome via oracle/manual                 |
-| Finalization        | Locking the outcome after the dispute window                   |
-| Claim / Redeem      | Burning winning shares for 1 USDC each                         |
-| Indexer             | Off-chain process mirroring chain events into Neon Postgres    |
-| Reorg               | Chain history rewrite; indexer must roll back unfinalized rows |
-| SIWE                | Sign-In with Ethereum (wallet-based auth)                      |
+| Term             | Meaning                                                    |
+| ---------------- | ---------------------------------------------------------- |
+| Parimutuel       | Winners split the total pool proportional to their stake   |
+| Collateral       | Mock USDC locked in the market                             |
+| Resolver         | Address allowed to choose the final outcome                |
+| Outcome          | `Unresolved`, `Yes`, or `No`                               |
+| Claim            | Winner withdraws their pro-rata payout                     |
+| Rounding dust    | Tiny remainder left in the contract after integer division |
+| Trusted resolver | A known address, not a decentralized oracle                |
+| Testnet-only     | No real money; Base Sepolia and mock USDC only             |

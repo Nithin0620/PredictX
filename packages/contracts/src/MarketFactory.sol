@@ -3,7 +3,7 @@ pragma solidity 0.8.24;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { MarketConfig } from "./MarketTypes.sol";
-import { PredictionMarket } from "./PredictionMarket.sol";
+import { MarketDeployer } from "./MarketDeployer.sol";
 
 /**
  * @title MarketFactory
@@ -25,6 +25,12 @@ contract MarketFactory {
 
     /// @notice Collateral token all markets use.
     IERC20 public immutable usdc;
+
+    /// @notice Recipient of the protocol share of trading fees.
+    address public immutable treasury;
+
+    /// @notice Separate contract that deploys market instances.
+    MarketDeployer public immutable marketDeployer;
 
     /// @notice Id that the next market will receive.
     uint256 public nextMarketId = 1;
@@ -52,9 +58,11 @@ contract MarketFactory {
     error LiquidityTooLow(uint256 provided, uint256 minimum);
     error CreationTooSoon(address creator, uint256 availableAt);
 
-    constructor(address usdc_) {
-        if (usdc_ == address(0)) revert ZeroAddress();
+    constructor(address usdc_, address treasury_) {
+        if (usdc_ == address(0) || treasury_ == address(0)) revert ZeroAddress();
         usdc = IERC20(usdc_);
+        treasury = treasury_;
+        marketDeployer = new MarketDeployer();
     }
 
     /**
@@ -69,15 +77,14 @@ contract MarketFactory {
         lastCreationAt[msg.sender] = block.timestamp;
         marketId = nextMarketId++;
 
-        PredictionMarket market =
-            new PredictionMarket(marketId, config, msg.sender, address(usdc), address(this));
-        address marketAddress = address(market);
+        address marketAddress =
+            address(marketDeployer.deploy(marketId, config, msg.sender, address(usdc), treasury));
 
         marketById[marketId] = marketAddress;
         marketIdByAddress[marketAddress] = marketId;
         _markets.push(marketAddress);
 
-        // The market constructor makes no external calls, so it cannot reenter the factory.
+        // The trusted deployer only constructs the market; it cannot reenter the factory.
         // forge-lint: disable-next-line(reentrancy-events)
         emit MarketCreated(marketId, marketAddress, msg.sender, config.question, config.deadline);
     }

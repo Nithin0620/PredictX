@@ -12,12 +12,13 @@ contract MarketFactoryTest is Test {
     MarketFactory internal factory;
     address internal creator = makeAddr("creator");
     address internal resolver = makeAddr("resolver");
+    address internal treasury = makeAddr("treasury");
     uint64 internal deadline;
 
     function setUp() public {
         vm.warp(1_700_000_000);
         usdc = new MockUSDC(address(this));
-        factory = new MarketFactory(address(usdc));
+        factory = new MarketFactory(address(usdc), treasury);
         deadline = uint64(block.timestamp + 30 days);
     }
 
@@ -40,8 +41,8 @@ contract MarketFactoryTest is Test {
     function test_CreateMarket() public {
         MarketConfig memory config = _config();
         uint256 expectedId = factory.nextMarketId();
-        uint256 nonce = vm.getNonce(address(factory));
-        address expectedMarket = vm.computeCreateAddress(address(factory), nonce);
+        uint256 nonce = vm.getNonce(address(factory.marketDeployer()));
+        address expectedMarket = vm.computeCreateAddress(address(factory.marketDeployer()), nonce);
 
         vm.expectEmit(true, true, true, true);
         emit MarketFactory.MarketCreated(
@@ -203,6 +204,11 @@ contract MarketFactoryTest is Test {
 
     function test_ZeroUsdcReverts() public {
         vm.expectRevert(MarketFactory.ZeroAddress.selector);
-        new MarketFactory(address(0));
+        new MarketFactory(address(0), treasury);
+    }
+
+    function test_ZeroTreasuryReverts() public {
+        vm.expectRevert(MarketFactory.ZeroAddress.selector);
+        new MarketFactory(address(usdc), address(0));
     }
 }

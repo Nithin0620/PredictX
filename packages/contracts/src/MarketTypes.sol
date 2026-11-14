@@ -18,6 +18,12 @@ enum Outcome {
     No
 }
 
+/// @notice Direction of a trade, used by the canonical `Trade` event.
+enum TradeSide {
+    Buy,
+    Sell
+}
+
 /**
  * @title MarketConfig
  * @notice Immutable parameters supplied when a market is created.

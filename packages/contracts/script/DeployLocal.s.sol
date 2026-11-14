@@ -21,7 +21,7 @@ contract DeployLocal is Script {
 
         vm.startBroadcast(deployerPrivateKey);
         usdc = new MockUSDC(deployer);
-        factory = new MarketFactory(address(usdc));
+        factory = new MarketFactory(address(usdc), deployer);
         vm.stopBroadcast();
 
         console2.log("MockUSDC deployed at:", address(usdc));

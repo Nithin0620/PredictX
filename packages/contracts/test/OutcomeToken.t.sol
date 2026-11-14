@@ -20,6 +20,7 @@ contract OutcomeTokenTest is Test {
         assertEq(token.symbol(), "pYES1");
         assertEq(token.decimals(), TestConstants.USDC_DECIMALS);
         assertEq(token.DECIMALS(), TestConstants.USDC_DECIMALS);
+        assertEq(token.TOKEN_KIND(), "OUTCOME");
         assertEq(token.market(), market);
     }
 

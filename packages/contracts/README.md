@@ -5,16 +5,25 @@ via the **thirdweb CLI** (see `docs/adr/0007-thirdweb-deployment.md`).
 
 ## Status
 
-Phase 7: `MockUSDC` (6-decimal testnet faucet), `MarketFactory` (validated, permissionless
-creation with a per-creator cooldown, sequential ids, enumerable registry), `PredictionMarket` with
-the lifecycle state machine (`Created → Active → Closed → Proposed → Finalized`), per-market
-`OutcomeToken` YES/NO ERC-20s, 1:1 collateral `split`/`merge`, and a constant-product AMM
-(`seedLiquidity`, `buy`, `sell`, `quoteBuy`, `quoteSell`, `getReserves`, `priceYes`). Fees stay in
-the pool in Phase 7; slippage/deadline, LP tokens, and fee routing arrive in Phases 8–9. Redemption
-is Phase 10; the dispute path is Phase 12. See `docs/amm.md` and `docs/state-machine.md`.
+Phase 11: `MockUSDC` (6-decimal testnet faucet), `MarketFactory` (validated, permissionless
+creation with a per-creator cooldown, sequential ids, enumerable registry, treasury), and
+`MarketDeployer` (keeps factory runtime below the EIP-170 limit). `PredictionMarket` implements the
+lifecycle state machine (`Created → Active → Closed → Proposed → Finalized`), per-market
+`OutcomeToken` YES/NO ERC-20s, per-market `LPToken` ERC-20s, 1:1 collateral `split`/`merge`, and a
+constant-product AMM (`seedLiquidity`, `buy`, `sell`, `quoteBuy`, `quoteSell`, `getReserves`,
+`priceYes`). Buys/sells enforce slippage and deadline bounds, are `nonReentrant`, and route 20% of
+the output fee to the treasury in the fee outcome token; the LP share stays in the pool.
+`addLiquidity`/`removeLiquidity` mint/burn proportional LP shares while `Active`. After
+finalization, `redeem`/`redeem(uint256)` burn winning shares for 1 USDC each and
+`redeemLiquidity` pays LPs the winning reserve share. `OracleResolver` resolves Chainlink
+`AggregatorV3` price-threshold markets; `ManualResolver` is the owner-controlled fallback. The
+dispute path is Phase 12. See `docs/amm.md`, `docs/resolution.md`, and `docs/state-machine.md`.
 
-99 contract tests cover the factory, tokens, collateral, lifecycle matrix, AMM quotes/trades, and
-two stateful invariants (collateral backing + CPMM `k`/reserve sync).
+179 contract tests (plus one env-gated Base Sepolia fork test) cover the factory, deployer, tokens,
+collateral, lifecycle matrix, AMM quotes/trades, slippage/deadline, protocol fee routing, LP
+add/remove, settlement claims/LP settlement, oracle validation/comparators, manual resolution, and
+four stateful invariants (collateral backing, CPMM `k`/reserve sync, LP solvency, settlement
+payout bounds).
 
 ## Prerequisites
 

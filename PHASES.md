@@ -1,7 +1,8 @@
-# PredictX — End-to-End Build Plan (20 Phases)
+# PredictX Lite — 4-Phase Build Plan
 
-> Companion document: see `PROJECT_PLAN.md` for **what** we are building and **how** it fits together.
-> This file is the **execution roadmap**: every phase, its sub-levels, deliverables, and exit criteria.
+> **Active plan:** PredictX Lite. This replaces the original 20-phase full-protocol roadmap for the
+> resume-focused build. The full contract implementation in this repo is an advanced reference.
+> Product scope and architecture live in `PROJECT_PLAN.md`.
 
 ---
 
@@ -10,67 +11,51 @@
 Each phase has the same shape:
 
 - **Goal** — one sentence on why this phase exists.
-- **Sub-phases** — numbered sub-levels you complete in order.
-- **Deliverables** — concrete artifacts (files, contracts, endpoints, pages).
-- **Exit criteria (Definition of Done)** — what must be _true_ before moving on.
-- **Risks / notes** — what usually goes wrong here.
+- **Sub-phases** — numbered tasks completed in order.
+- **Deliverables** — concrete artifacts.
+- **Exit criteria** — what must be true before moving on.
+- **Risks / notes** — what usually goes wrong.
 
-Phases are ordered by dependency, not by importance. You can run **contracts (1–13)** and
-**backend (14–17)** partially in parallel once Phase 7 is stable, but the sequence below is the
-safe default for a solo builder.
+Lite is a **4-week, part-time** build. Do not start Phase 2 until Phase 1 compiles and the basic
+contract tests pass. Do not start Phase 3 until the contracts are deployed locally and tested.
 
 ---
 
-## 1. Scope decisions — what we cut and why
+## 1. Scope decisions — locked before Phase 1
 
-These decisions are locked before Phase 1. They are the answer to "what should I cut".
+| Feature                      | Decision  | Why                                          |
+| ---------------------------- | --------- | -------------------------------------------- |
+| Binary YES/NO markets        | **Keep**  | Core prediction-market behavior.             |
+| Mock USDC collateral         | **Keep**  | Realistic token handling with test funds.    |
+| Parimutuel pools             | **Keep**  | Simple payout math; no AMM required.         |
+| Trusted resolver             | **Keep**  | Manual YES/NO resolution is enough for Lite. |
+| Pro-rata winner claims       | **Keep**  | Demonstrates settlement and rounding.        |
+| AMM / CPMM                   | **Cut**   | Too much math and testing for this scope.    |
+| LP tokens / liquidity        | **Cut**   | Removes the hardest accounting surface.      |
+| Protocol fees                | **Cut**   | No treasury or fee split.                    |
+| ERC-20 YES/NO outcome tokens | **Cut**   | Internal stakes are enough for Lite.         |
+| Chainlink oracle             | **Cut**   | Trusted resolver is acceptable on testnet.   |
+| Disputes / arbitration       | **Cut**   | Deferred to the advanced version.            |
+| Backend / indexer / database | **Cut**   | Direct RPC reads are enough.                 |
+| Redis / BullMQ / workers     | **Cut**   | No background jobs.                          |
+| SIWE / sessions              | **Cut**   | Wallet connection is the only identity.      |
+| Upgradeable contracts        | **Cut**   | Immutable contracts are simpler.             |
+| Mainnet / real money         | **Never** | Testnet and mock USDC only.                  |
 
-| Feature                                  | Decision                  | Why                                                    |
-| ---------------------------------------- | ------------------------- | ------------------------------------------------------ |
-| Real ERC-20 YES/NO outcome tokens        | **Keep**                  | More impressive, composable, testable.                 |
-| CPMM (x·y=k) AMM over YES/NO             | **Keep**                  | Proven math, no need to invent pricing.                |
-| LMSR / CLOB order book                   | **Cut (MVP)**             | Huge complexity, poor ROI for portfolio.               |
-| Chainlink price-feed markets             | **Keep**                  | Objective, automatable, the strong differentiator.     |
-| Sports / subjective markets              | **Cut (MVP)**             | Resolution + dispute nightmare.                        |
-| Full UMA-style decentralized arbitration | **Cut (MVP)**             | Replace with bonded propose/challenge + admin arbiter. |
-| AI market insights                       | **Defer to Phase 20**     | Nice-to-have, not core, no resolution authority.       |
-| Dispute bond + dispute window            | **Keep (simplified)**     | One bonded challenge round, then arbiter.              |
-| Mainnet / real money                     | **Never in this project** | Regulatory + safety. Testnet + mock USDC only.         |
-| Mobile app                               | **Cut**                   | Responsive web is enough.                              |
-| Multi-outcome (non-binary) markets       | **Cut (MVP)**             | Binary only; architecture leaves room.                 |
-
-**Golden rule:** if a feature is not needed for a demoable end-to-end trade → resolve → claim loop,
-it does not belong in Phases 1–19.
+**Golden rule:** if a feature is not needed for `create → bet → resolve → claim`, it is not in Lite.
 
 ---
 
 ## 2. Phase overview
 
-| #   | Phase                                    | Est. (part-time) | Depends on | Primary deliverable                  |
-| --- | ---------------------------------------- | ---------------- | ---------- | ------------------------------------ |
-| 1   | Foundations & architecture decisions     | 2–3 days         | —          | ADRs + repo skeleton                 |
-| 2   | Monorepo, tooling & CI                   | 2–3 days         | 1          | Working pnpm/turbo workspace + CI    |
-| 3   | Local chain & contract scaffolding       | 3–4 days         | 2          | Foundry project + local Base fork    |
-| 4   | Collateral, factory & market registry    | 4–5 days         | 3          | `MockUSDC`, `MarketFactory`          |
-| 5   | Market lifecycle state machine           | 4–5 days         | 4          | `PredictionMarket` states + guards   |
-| 6   | Outcome tokens & collateral vault        | 5–6 days         | 5          | `OutcomeToken`, split/merge          |
-| 7   | AMM pricing engine (CPMM)                | 6–7 days         | 6          | `AMM` buy/sell quote + swap          |
-| 8   | Trading engine (fees, slippage)          | 5–6 days         | 7          | End-to-end trade + events            |
-| 9   | Liquidity provision & LP tokens          | 4–5 days         | 8          | Add/remove liquidity + fees          |
-| 10  | Settlement & claim flow                  | 4–5 days         | 9          | Payouts + double-claim protection    |
-| 11  | Oracle integration                       | 5–6 days         | 10         | Chainlink resolver + manual resolver |
-| 12  | Dispute resolution & finalization        | 5–6 days         | 11         | Propose/challenge/arbiter flow       |
-| 13  | Contract hardening & test suite          | 6–8 days         | 12         | Fuzz/invariant tests, gas report     |
-| 14  | Backend foundation (API + DB)            | 5–6 days         | 13         | Express API + Prisma/Neon schema     |
-| 15  | Blockchain indexer                       | 6–7 days         | 14         | Event sync + reorg handling          |
-| 16  | Domain modules, workers & notifications  | 6–7 days         | 15         | REST modules + BullMQ jobs           |
-| 17  | Realtime layer                           | 3–4 days         | 16         | WebSocket/SSE probability feed       |
-| 18  | Frontend foundation & wallet             | 4–5 days         | 17         | Next.js shell + SIWE login           |
-| 19  | Market discovery, trading & portfolio UI | 7–9 days         | 18         | Full user-facing product             |
-| 20  | Advanced features, deployment & launch   | 7–10 days        | 19         | Deployed app + docs + demo           |
+| #   | Phase                     | Est. (part-time) | Depends on | Primary deliverable                             |
+| --- | ------------------------- | ---------------- | ---------- | ----------------------------------------------- |
+| 1   | Core contracts            | 5–7 days         | —          | `MockUSDC`, `PredictXMarket`, `PredictXFactory` |
+| 2   | Tests and local deploy    | 3–5 days         | 1          | Foundry tests + Anvil deployment                |
+| 3   | Frontend                  | 5–7 days         | 2          | Market list, detail, create, bet, claim         |
+| 4   | Testnet deploy and polish | 3–5 days         | 3          | Base Sepolia deployment, README, demo           |
 
-**Realistic total:** ~10–14 weeks part-time for a high-quality finish. Compress to ~7–8 weeks by
-using the "minimum path" noted at the bottom.
+**Realistic total:** ~4 weeks part-time.
 
 ---
 
@@ -78,708 +63,347 @@ using the "minimum path" noted at the bottom.
 
 ---
 
-### Phase 1 — Foundations & Architecture Decisions
+### Phase 1 — Core Contracts
 
-**Goal:** Remove ambiguity. Every "we'll decide later" becomes a written decision now.
+**Goal:** Implement the smallest complete market: create, bet, resolve, claim.
 
 **Sub-phases**
-1.1 Write the one-page project vision (what, who, why, demo script).
-1.2 Lock the tech stack: chain, contracts, backend, frontend, infra.
-1.3 Choose the chain: **Base Sepolia** (cheap, Chainlink feeds available, EVM).
-1.4 Choose the token model: **ERC-20 YES/NO per market**, not internal ledger.
-1.5 Choose pricing: **CPMM (x·y=k)** with full collateralization.
-1.6 Choose resolution: **Chainlink price feeds** for objective markets + **manual resolver** fallback.
-1.7 Write ADRs (Architecture Decision Records) for each above choice.
-1.8 Define the demo story you must be able to show at the end.
+1.1 Create a clean `predictx-lite/contracts` Foundry project. Do not add a backend or monorepo.
+1.2 Add OpenZeppelin Contracts and configure `foundry.toml` for Solidity 0.8.24.
+1.3 Implement `MockUSDC.sol` with 6 decimals, owner mint, and an optional faucet.
+1.4 Define `Outcome { Unresolved, Yes, No }`.
+1.5 Implement `PredictXMarket.sol` with immutable question, creator, resolver, collateral, and deadline.
+1.6 Add `bet(Outcome side, uint256 amount)` with deadline, resolution, zero-amount, and side checks.
+1.7 Add `resolve(Outcome result)` with resolver-only, deadline, unresolved, and double-resolve checks.
+1.8 Add `claim()` with unresolved, already-claimed, no-winning-stake, and double-claim checks.
+1.9 Implement the pro-rata payout formula and `SafeERC20` transfers.
+1.10 Add events: `Bet`, `Resolved`, `Claimed`.
+1.11 Implement `PredictXFactory.sol` with sequential IDs, market registry, and `getMarkets()`.
+1.12 Emit `MarketCreated` with market id, address, creator, resolver, deadline, and question.
+1.13 Add a deploy script for `MockUSDC` and `PredictXFactory`.
+1.14 Write a short `README.md` with the trust model and known limitations.
+
+**Contract API**
+
+```solidity
+function bet(Outcome side, uint256 amount) external;
+function resolve(Outcome result) external;
+function claim() external returns (uint256 payout);
+```
+
+```solidity
+function createMarket(
+    string calldata question,
+    uint64 deadline,
+    address resolver
+) external returns (address market);
+```
+
+**Payout formula**
+
+```text
+totalPool = totalYes + totalNo
+payout = winningStake * totalPool / winningPool
+```
 
 **Deliverables**
 
-- `docs/adr/0001-chain.md` … `docs/adr/0006-resolution.md`
-- `docs/vision.md` (one page)
-- `docs/demo-script.md`
+- `MockUSDC.sol`
+- `PredictXMarket.sol`
+- `PredictXFactory.sol`
+- `script/DeployLite.s.sol`
+- `contracts/README.md`
 
 **Exit criteria**
 
-- Every decision in `PROJECT_PLAN.md` §Scope is written and justified.
-- You can explain the full trade → resolve → claim loop on a whiteboard.
+- `forge build` passes.
+- A local script can deploy USDC and the factory.
+- A user can create a market, bet YES/NO, resolve, and claim in a Foundry test.
+- No admin function can withdraw user funds.
 
 **Risks**
 
-- Scope creep starts here. Say "no" in writing now, not later.
+- Scope creep into AMM, fees, or outcome tokens. Stop and re-read §1.
+- Rounding mistakes. Use integer division and test the dust case.
+- Resolver lock-in. Document that an inactive resolver can freeze funds.
 
 ---
 
-### Phase 2 — Monorepo, Tooling & CI
+### Phase 2 — Tests and Local Deployment
 
-**Goal:** One repo, one command to build/test everything, green CI from day one.
+**Goal:** Prove the core flow and edge cases before building UI.
 
 **Sub-phases**
-2.1 Initialize `pnpm` workspace with `apps/` and `packages/`.
-2.2 Add Turborepo with `build`, `test`, `lint`, `typecheck` pipelines.
-2.3 Create packages: `contracts`, `shared` (types + ABIs + constants), `backend`, `web`.
-2.4 Configure ESLint + Prettier + TypeScript strict mode + Husky + lint-staged.
-2.5 Add `.env.example` files per package; never commit secrets.
-2.6 Add GitHub Actions: install → lint → typecheck → test (contracts + backend).
-2.7 Add `Makefile` or root scripts: `dev`, `test`, `deploy:local`, `indexer:dev`.
+2.1 Add a test fixture with `MockUSDC`, `PredictXFactory`, and 3–4 test users.
+2.2 Test factory creation, sequential IDs, registry reads, and event emission.
+2.3 Test invalid creation: zero resolver, past deadline, empty question.
+2.4 Test YES and NO bets update the correct pools and stakes.
+2.5 Test bet reverts: zero amount, `Unresolved`, after deadline, after resolution.
+2.6 Test resolve reverts: non-resolver, before deadline, `Unresolved`, twice.
+2.7 Test YES winner payout and NO winner payout.
+2.8 Test loser cannot claim and double claim reverts.
+2.9 Test claim before resolution reverts.
+2.10 Test rounding dust remains in the contract and no user is overpaid.
+2.11 Add one fuzz test: payout never exceeds the total pool.
+2.12 Run `forge fmt`, `forge lint`, `forge test`, and `forge coverage`.
+2.13 Deploy to local Anvil and run the full flow manually.
+
+**Minimum test list**
+
+1. Create market
+2. Market count increments
+3. Zero resolver reverts
+4. Past deadline reverts
+5. Empty question reverts
+6. YES bet accounting
+7. NO bet accounting
+8. Zero bet reverts
+9. Bet after deadline reverts
+10. Bet after resolution reverts
+11. Only resolver can resolve
+12. Resolve before deadline reverts
+13. Resolve twice reverts
+14. Resolve `Unresolved` reverts
+15. YES winner pro-rata payout
+16. NO winner pro-rata payout
+17. Loser cannot claim
+18. Double claim reverts
+19. Claim before resolution reverts
+20. Rounding never overpays
 
 **Deliverables**
 
-- Root `package.json`, `pnpm-workspace.yaml`, `turbo.json`
-- `packages/shared` with generated ABIs placeholder
-- `.github/workflows/ci.yml`
-- README with setup instructions
+- `test/PredictXMarket.t.sol`
+- `test/PredictXFactory.t.sol`
+- Passing local Anvil deployment
+- Coverage summary in the README
 
 **Exit criteria**
 
-- `pnpm install && pnpm build && pnpm test` passes locally and in CI.
-- A new contributor can run the project from the README alone.
+- At least 15 meaningful tests pass.
+- Coverage is above 90% on Lite contracts.
+- `forge fmt --check` and `forge lint` are clean.
+- You can run the full flow on Anvil from the README.
 
 **Risks**
 
-- Over-engineering tooling. Timebox to 3 days max.
+- Testing only the happy path. Add the revert cases first.
+- Overbuilding invariant tests. One fuzz test is enough for Lite.
 
 ---
 
-### Phase 3 — Local Chain & Contract Scaffolding
+### Phase 3 — Frontend
 
-**Goal:** A reproducible local blockchain and a compiling Foundry project.
+**Goal:** A small Next.js app that lets a wallet use the deployed contracts.
 
 **Sub-phases**
-3.1 Install Foundry; create `packages/contracts` with `forge init`.
-3.2 Add OpenZeppelin Contracts dependency.
-3.3 Configure `foundry.toml` (solc 0.8.24+, optimizer, remappings, fuzz runs).
-3.4 Set up Anvil + a deploy script + `Makefile` target to boot a local chain.
-3.5 Optional: fork Base Sepolia (`anvil --fork-url`) for Chainlink feed testing.
-3.6 Add `forge fmt` and `forge snapshot` baseline.
-3.7 Create the directory layout: `src/`, `test/`, `script/`, `test/utils/`.
-3.8 Add thirdweb CLI (`npx thirdweb deploy`) for testnet deployment; Foundry stays the source of truth for tests and local deploys.
+3.1 Scaffold `predictx-lite/web` with Next.js App Router and TypeScript.
+3.2 Add Tailwind CSS.
+3.3 Add wagmi, viem, and RainbowKit or ConnectKit.
+3.4 Configure Base Sepolia and the contract addresses.
+3.5 Generate or copy the contract ABIs into `lib/contracts.ts`.
+3.6 Build the market list page.
+3.7 Build the market detail page with pools, deadline, and user positions.
+3.8 Build the create market page.
+3.9 Add the bet form with USDC approval and `bet`.
+3.10 Add the resolve button for the resolver.
+3.11 Add the claim button for winners.
+3.12 Add loading, pending, success, and error states.
+3.13 Add a faucet button if `MockUSDC` exposes one.
+3.14 Add a wrong-network warning.
+
+**Pages**
+
+| Route               | Contents                                            |
+| ------------------- | --------------------------------------------------- |
+| `/`                 | Market cards, pools, status, create button          |
+| `/market/[address]` | Question, pools, deadline, bet form, resolve, claim |
+| `/create`           | Question, deadline, resolver, submit                |
+
+**Reads**
+
+- `factory.marketCount()`
+- `factory.markets(id)`
+- `market.question()`
+- `market.deadline()`
+- `market.totalYes()`
+- `market.totalNo()`
+- `market.outcome()`
+- `market.yesStake(user)`
+- `market.noStake(user)`
+- `market.claimed(user)`
+
+Use `useReadContracts` to batch reads.
+
+**Writes**
+
+- `usdc.approve(market, amount)`
+- `market.bet(Outcome.Yes or Outcome.No, amount)`
+- `market.resolve(Outcome.Yes or Outcome.No)`
+- `market.claim()`
+- `factory.createMarket(question, deadline, resolver)`
 
 **Deliverables**
 
-- Compiling `packages/contracts` with empty/skeleton contracts
-- `script/DeployLocal.s.sol`
-- `make chain` boots Anvil with deterministic accounts
-- thirdweb deploy config/notes in `docs/adr/`
+- Working local frontend
+- Three pages
+- Wallet connection
+- Bet, resolve, and claim flows
+- Screenshots in the README
 
 **Exit criteria**
 
-- `forge build` clean, `forge test` runs (even if 0 real tests).
-- Anvil boots and you can deploy a placeholder contract to it.
+- A user can connect a wallet on Base Sepolia.
+- A user can create a market.
+- A user can approve USDC and bet.
+- The resolver can resolve after the deadline.
+- A winner can claim.
+- A loser sees that they have nothing to claim.
 
 **Risks**
 
-- Solc/remapping mismatches. Pin versions explicitly.
+- Building a backend you do not need. Read directly from chain.
+- Overdesigning the UI. Three pages are enough.
+- Forgetting token approval. Handle approval before betting.
 
 ---
 
-### Phase 4 — Collateral, Factory & Market Registry
+### Phase 4 — Testnet Deploy and Polish
 
-**Goal:** Create markets on-chain with unique IDs and a mock stablecoin.
+**Goal:** Turn the local demo into a public, resume-ready project.
 
 **Sub-phases**
-4.1 Implement `MockUSDC.sol` (ERC-20, 6 decimals, `mint` faucet for testers).
-4.2 Define `MarketConfig` struct (question, resolution source, deadline, resolver, fee, initial liquidity).
-4.3 Implement `MarketFactory.sol`: `createMarket(config)` deploys a `PredictionMarket`, registers it.
-4.4 Assign sequential `marketId`; store `marketId → market address`.
-4.5 Emit `MarketCreated(marketId, address, creator, question, deadline)`.
-4.6 Add access control (who can create; allow permissionless with anti-spam guard).
-4.7 Unit tests: creation, ID uniqueness, config validation, event emission.
-4.8 Write deploy script wiring USDC → factory.
+4.1 Deploy `MockUSDC` to Base Sepolia.
+4.2 Deploy `PredictXFactory` to Base Sepolia.
+4.3 Verify both contracts on Basescan.
+4.4 Put the addresses in the frontend environment.
+4.5 Deploy the frontend to Vercel.
+4.6 Create 3–5 demo markets.
+4.7 Bet from 2–3 wallets.
+4.8 Resolve at least one YES market and one NO market.
+4.9 Claim from both winning wallets.
+4.10 Write the README with architecture, setup, deployment, tests, and limitations.
+4.11 Add screenshots and a 2-minute demo video.
+4.12 Add a “What I would build next” section.
+4.13 Run a final end-to-end check from a fresh wallet.
+
+**README sections**
+
+```text
+What it does
+Architecture
+How resolution works
+Trust model and limitations
+Local setup
+Deployment
+Tests
+Screenshots
+Demo video
+What I would build next
+```
 
 **Deliverables**
 
-- `MockUSDC.sol`, `MarketFactory.sol`, `MarketCreated` event
-- Tests covering creation + invalid configs
-- Deploy script: USDC + factory
+- Verified Base Sepolia contracts
+- Deployed Vercel app
+- 3–5 demo markets with real transactions
+- README + screenshots + demo video
+- Final end-to-end walkthrough
 
 **Exit criteria**
 
-- You can create N markets locally and enumerate them from the factory.
-- Invalid configs (past deadline, zero liquidity, empty question) revert.
+- A stranger can open the app and use it without help.
+- The contract addresses on Basescan match the frontend.
+- At least one YES and one NO market are fully resolved and claimed.
+- The README explains the trusted resolver and the lack of disputes.
+- The demo video is under 3 minutes.
 
 **Risks**
 
-- Gas cost of deploying a contract per market. Accept for MVP; note a clone/proxy option later.
+- Deployment/env mistakes. Test with a fresh wallet.
+- Claiming the project is production-ready. Say “testnet MVP” clearly.
+- Hiding limitations. Document them; it looks stronger.
 
 ---
 
-### Phase 5 — Market Lifecycle State Machine
+## 4. Optional extensions (after Lite ships)
 
-**Goal:** A single, auditable state machine every other contract respects.
+Only start these after the four phases are complete and the demo works:
 
-**Sub-phases**
-5.1 Define states: `Created → Active → Closed → Proposed → Disputed? → Resolved → Finalized`.
-5.2 Implement transition guards and `onlyState` modifiers.
-5.3 Implement `close()` (after deadline, permissionless).
-5.4 Implement `proposeOutcome()` entry point (resolver role) — body wired in Phase 11.
-5.5 Define `MarketStatus` enum + getters; emit `MarketClosed`, `OutcomeProposed`, etc.
-5.6 Add timelock/period constants (trading close, dispute window, finalization delay).
-5.7 Unit tests for every legal and illegal transition (state × action matrix).
-5.8 Document the state diagram in `docs/state-machine.md`.
+1. **ERC-20 YES/NO outcome tokens** — more composable, more accounting.
+2. **AMM pricing** — replace parimutuel pools with CPMM.
+3. **LP tokens** — add liquidity and fees.
+4. **Chainlink oracle** — automate objective resolution.
+5. **Dispute window** — bonded challenge and arbiter.
+6. **Backend indexer** — only if the market list becomes too large for direct RPC reads.
+7. **Realtime updates** — only if the UI needs live pool changes.
 
-**Deliverables**
-
-- `PredictionMarket.sol` with full state enum + guards
-- State-machine test matrix
-- `docs/state-machine.md` diagram
-
-**Exit criteria**
-
-- No action can bypass a required state.
-- The full state × action test matrix is green.
-
-**Risks**
-
-- Missing a transition → stuck markets. Test exhaustively now.
+Each extension should be its own branch and its own demo. Do not merge them into Lite just to make the
+resume bullet longer.
 
 ---
 
-### Phase 6 — Outcome Tokens & Collateral Vault
-
-**Goal:** YES/NO ERC-20 tokens fully backed 1:1 by collateral, with split/merge.
-
-**Sub-phases**
-6.1 Implement `OutcomeToken.sol` (ERC-20, 18 decimals or match USDC 6 — decide + document).
-6.2 Deploy two tokens per market (`YES`, `NO`) from the market contract.
-6.3 Implement `split(amount)`: pull USDC → mint `amount` YES + `amount` NO to caller.
-6.4 Implement `merge(amount)`: burn `amount` YES + `amount` NO → return `amount` USDC.
-6.5 Enforce collateral accounting: `usdc.balanceOf(market) >= totalSupply(YES)` invariant.
-6.6 Add `redeem` stub (finalized in Phase 10).
-6.7 Unit tests: split/merge round-trip, invariant holds, overflow/decimals edges.
-6.8 Fuzz test the invariant: for random split/merge sequences, backing never breaks.
-
-**Deliverables**
-
-- `OutcomeToken.sol`, `split()`, `merge()` in market
-- Invariant test proving full collateralization
-
-**Exit criteria**
-
-- `split` then `merge` returns exactly the input amount (minus zero fees).
-- The collateral invariant holds under fuzzing.
-
-**Risks**
-
-- Decimal mismatch (USDC 6 vs token 18). Pick one and document everywhere.
-
----
-
-### Phase 7 — AMM Pricing Engine (CPMM)
-
-**Goal:** Constant-product pricing over YES/NO with correct, fully-collateralized swaps.
-
-**Sub-phases**
-7.1 Implement `AMM.sol` (or library) holding YES/NO reserves.
-7.2 Seed initial liquidity from market creation (split initial USDC → YES+NO into pool).
-7.3 Implement `getAmountOut(reserveIn, reserveOut, amountIn)` (0.3% or configurable fee).
-7.4 Implement `quoteBuy(outcome, collateralIn)` and `quoteSell(outcome, sharesIn)` views.
-7.5 Implement the swap primitive: buy = split collateral → add opposite token to pool → send wanted token out.
-7.6 Enforce `x·y ≥ k` invariant after every swap (with fee accounting).
-7.7 Track reserves; expose `getReserves()` and implied probability `priceYes = reserveNo / (reserveYes + reserveNo)` (document formula).
-7.8 Unit tests: price monotonicity, no free money, fee accrual, edge reserves.
-7.9 Fuzz/invariant tests: `k` never decreases; pool always fully backed.
-
-**Deliverables**
-
-- `AMM.sol` with quote + swap
-- Pricing formula documented in `docs/amm.md`
-- Invariant tests for `k` and backing
-
-**Exit criteria**
-
-- Buying YES always raises YES price; selling lowers it.
-- No sequence of trades can drain collateral or break `k`.
-- Implied probability is always within (0, 1).
-
-**Risks**
-
-- The #1 place to lose money/bugs. Do not move on until invariants pass.
-
----
-
-### Phase 8 — Trading Engine (fees, slippage, events)
-
-**Goal:** User-facing buy/sell that is safe, bounded, and fully evented.
-
-**Sub-phases**
-8.1 Implement `buy(outcome, collateralIn, minSharesOut, deadline)`.
-8.2 Implement `sell(outcome, sharesIn, minCollateralOut, deadline)`.
-8.3 Add slippage protection via `min/max` params + deadline (revert on violation).
-8.4 Route fees: LP share + protocol treasury share; emit fee events.
-8.5 Emit canonical events: `Trade(user, market, outcome, side, shares, collateral, fee, price)`.
-8.6 Add reentrancy guards + checks-effects-interactions ordering.
-8.7 Implement ERC-20 approval flow (user approves USDC to market) — EIP-2612 deferred to Phase 20.
-8.8 Integration tests: full buy→sell round-trip, slippage reverts, fee math, event contents.
-8.9 Gas snapshot of buy/sell.
-
-**Deliverables**
-
-- `buy`/`sell` end-to-end with events + fees
-- Integration tests + gas report
-
-**Exit criteria**
-
-- A user can buy YES, then sell YES, and receive the correct net collateral.
-- Slippage/deadline violations revert with clear custom errors.
-- Every state change emits an indexable event.
-
-**Risks**
-
-- Fee math rounding. Use consistent rounding direction (favor the pool) and test it.
-
----
-
-### Phase 9 — Liquidity Provision & LP Tokens
-
-**Goal:** Let users provide liquidity, earn fees, and exit without breaking solvency.
-
-**Sub-phases**
-9.1 Implement LP token (ERC-20) representing pool shares.
-9.2 `addLiquidity(usdcAmount)` → split → add YES+NO → mint LP tokens.
-9.3 `removeLiquidity(lpAmount)` → burn LP → return proportional YES+NO → optionally merge to USDC.
-9.4 Enforce that liquidity can only be added/removed while `Active` (or per rules).
-9.5 Distribute accrued fees to LPs (via reserve growth or explicit fee pool).
-9.6 Emit `LiquidityAdded`, `LiquidityRemoved`.
-9.7 Tests: add/remove round-trip, LP share math, fees accrue to LPs, no dilution attacks.
-9.8 Invariant: LP redemption never exceeds pool solvency.
-
-**Deliverables**
-
-- LP token + add/remove liquidity + fee distribution
-- Tests + invariants
-
-**Exit criteria**
-
-- Two LPs can add liquidity, earn fees from trades, and withdraw proportionally.
-- Removing all liquidity still leaves outstanding positions claimable at settlement.
-
-**Risks**
-
-- Interaction between LP exit and open positions. Test "LP leaves, then market resolves".
-
----
-
-### Phase 10 — Settlement & Claim Flow
-
-**Goal:** Winning shares redeem for 1 USDC; losers get 0; no double claims.
-
-**Sub-phases**
-10.1 Implement `redeem()` for the winning outcome token (burn → pay 1 USDC each).
-10.2 Implement losing-token handling (worth 0; optional cleanup).
-10.3 Add `claimed` mapping to prevent double redemption.
-10.4 Handle LP token settlement (LP redeems its share of remaining collateral after claims).
-10.5 Ensure pool + open positions accounting sums exactly to collateral held.
-10.6 Emit `Redeemed(user, market, outcome, shares, payout)`.
-10.7 Tests: winner payout, loser zero, double-claim reverts, LP + trader both claim correctly.
-10.8 Invariant: total payouts ≤ total collateral (no insolvency).
-
-**Deliverables**
-
-- `redeem()` + claim tracking + LP settlement
-- Settlement invariant tests
-
-**Exit criteria**
-
-- After finalization, every winner can claim exactly `shares × 1 USDC` once.
-- Sum of all payouts never exceeds collateral held.
-
-**Risks**
-
-- Rounding dust. Decide who absorbs dust (treasury) and document it.
-
----
-
-### Phase 11 — Oracle Integration
-
-**Goal:** Objective markets resolve automatically from a trusted price feed; others via resolver.
-
-**Sub-phases**
-11.1 Implement `OracleResolver.sol` with a Chainlink `AggregatorV3Interface`.
-11.2 Encode price-threshold markets: `(feed, comparator, threshold, deadline)`.
-11.3 Implement `resolveFromFeed()` reading `latestRoundData()` at/after deadline (staleness checks).
-11.4 Handle Chainlink edge cases: stale data, negative/zero answer, decimals.
-11.5 Implement `ManualResolver` path for non-price markets (resolver role proposes outcome).
-11.6 Wire resolver → `proposeOutcome()` in the market state machine.
-11.7 Optional: Chainlink Automation to auto-trigger resolution at deadline.
-11.8 Tests on a Base Sepolia fork: mock feed answers → correct outcome; stale feed reverts.
-11.9 Document resolution criteria format in `docs/resolution.md`.
-
-**Deliverables**
-
-- `OracleResolver.sol`, `ManualResolver`, resolution docs
-- Fork tests against real Chainlink feed
-
-**Exit criteria**
-
-- An ETH-price market resolves automatically from the feed on a fork.
-- Stale/manipulated feed data cannot force resolution.
-
-**Risks**
-
-- This is the hardest correctness surface. Keep the first markets objective only.
-
----
-
-### Phase 12 — Dispute Resolution & Finalization
-
-**Goal:** A cheap, bounded challenge window before payouts unlock.
-
-**Sub-phases**
-12.1 Add `proposeOutcome(outcome)` with a proposer bond.
-12.2 Add `disputeOutcome(outcome)` requiring a matching bond within the dispute window.
-12.3 Add `finalize()` after the window (or after arbiter ruling) → `Finalized`.
-12.4 Implement arbiter/admin resolution for disputed markets (documented trust assumption).
-12.5 Bond slashing: honest party rewarded, dishonest party slashed.
-12.6 Emit `OutcomeProposed`, `OutcomeDisputed`, `MarketFinalized`.
-12.7 Tests: propose→finalize happy path; propose→dispute→arbiter path; bond accounting.
-12.8 Document trust model + "what a real UMA integration would replace".
-
-**Deliverables**
-
-- Propose/dispute/finalize flow + bond logic
-- Trust-model doc
-
-**Exit criteria**
-
-- No payout is possible before finalization.
-- A disputed outcome cannot be finalized without arbiter action.
-- Bonds are conserved (never lost to the void).
-
-**Risks**
-
-- Do not over-build arbitration. One round + admin arbiter is enough for a portfolio.
-
----
-
-### Phase 13 — Contract Hardening & Test Suite
-
-**Goal:** Production-quality confidence in the contracts before backend work.
-
-**Sub-phases**
-13.1 Reach target coverage (>90% on core contracts).
-13.2 Invariant/fuzz suite: collateralization, `k` non-decrease, payout solvency.
-13.3 Add Slither static analysis; fix/justify every finding.
-13.4 Gas optimization pass (packed structs, custom errors, calldata) + before/after report.
-13.5 Add `forge snapshot` and track regressions.
-13.6 Write `docs/security.md`: threat model, trust assumptions, known limitations.
-13.7 (Optional) Testnet dry run: deploy to Base Sepolia, run the full loop with a script.
-13.8 Freeze the contract ABI; generate TypeScript ABIs into `packages/shared`.
-
-**Deliverables**
-
-- High-coverage test suite + invariants
-- Slither report + gas report
-- `docs/security.md`
-- Frozen ABIs in `packages/shared`
-
-**Exit criteria**
-
-- CI enforces tests + coverage + lint on contracts.
-- ABIs are generated and consumable by backend/frontend.
-
-**Risks**
-
-- Perfectionism. Timebox; "audit-ready" not "audited".
-
----
-
-### Phase 14 — Backend Foundation (API + DB + Auth)
-
-**Goal:** A running API with a schema that mirrors on-chain truth.
-
-**Sub-phases**
-14.1 Scaffold `packages/backend`: Express + TypeScript + Zod validation.
-14.2 Configure Prisma + **Neon Postgres** (one Neon branch per dev; pooled connection for runtime, direct connection for migrations).
-14.3 Design schema: `users, markets, outcomes, positions, trades, liquidity_events, resolutions, disputes, transactions, event_cursors, market_stats, notifications`.
-14.4 Implement SIWE (Sign-In with Ethereum) → JWT session.
-14.5 Implement health/metrics endpoints + structured logging (pino).
-14.6 Add config loader (env, chain id, contract addresses, RPC URL).
-14.7 Add error handling middleware + consistent API envelope.
-14.8 Docker Compose: Redis for local dev (Postgres is Neon; no local PG needed).
-
-**Deliverables**
-
-- Running API with `/health`, `/auth/siwe`, `/auth/verify`
-- Prisma schema + migrations against Neon
-- Docker Compose (Redis) + Neon branch config in `.env.example`
-
-**Exit criteria**
-
-- Backend boots, migrates DB, and authenticates a wallet via SIWE.
-- Config comes entirely from env; no hardcoded addresses.
-
-**Risks**
-
-- Modeling DB before indexer events are final. Revisit schema in Phase 15.
-
----
-
-### Phase 15 — Blockchain Indexer
-
-**Goal:** Reliable, reorg-safe sync of on-chain events into Neon Postgres.
-
-**Sub-phases**
-15.1 Define event decoders for every contract event (viem `parseEventLogs`).
-15.2 Store a block cursor in `event_cursors`; process logs in block order.
-15.3 Implement idempotent upserts keyed by `(tx_hash, log_index)`.
-15.4 Add finality lag (e.g., wait N blocks) before marking rows final.
-15.5 Implement reorg detection (parent hash check) + rollback of unfinalized rows.
-15.6 Add backfill mode (historical range) + live mode (poll/subscribe).
-15.7 Derive aggregates: `positions`, `market_stats` (volume, open interest, last price).
-15.8 Add tests with a local Anvil: emit events → assert DB state; simulate reorg.
-15.9 Add indexer lag/health metrics.
-
-**Deliverables**
-
-- `blockchain/indexer` with backfill + live modes
-- Reorg handling + idempotency tests
-- Derived `positions` / `market_stats`
-
-**Exit criteria**
-
-- Killing and restarting the indexer resumes exactly where it left off.
-- Replaying the same block twice produces identical DB state.
-- A simulated reorg rolls back correctly.
-
-**Risks**
-
-- This is where most "Web3 backend" projects break. Budget extra time here.
-
----
-
-### Phase 16 — Domain Modules, Workers & Notifications
-
-**Goal:** Clean REST APIs over indexed data + background jobs.
-
-**Sub-phases**
-16.1 `markets` module: list, filter, detail, search, pagination.
-16.2 `trading` module: build unsigned tx payloads (quote + calldata) for the frontend.
-16.3 `portfolio` module: user positions, PnL, claimable amounts, history.
-16.4 `analytics` module: volume, probability history, leaderboards.
-16.5 `oracle`/`resolution` module: resolution status, evidence, dispute info.
-16.6 BullMQ workers: `event-sync` (safety net), `market-resolution` (trigger resolution at deadline), `notification` (email/Telegram optional).
-16.7 Retries + dead-letter queue + idempotency keys.
-16.8 Notifications: trade confirmations, market closed, resolution available, claim ready.
-16.9 API tests (integration) + OpenAPI/Swagger docs.
-
-**Deliverables**
-
-- REST modules + OpenAPI docs
-- BullMQ workers + DLQ
-- Notification pipeline
-
-**Exit criteria**
-
-- Frontend can fetch everything it needs from documented endpoints.
-- Resolution worker can auto-close and trigger resolution for matured markets.
-- Failed jobs retry and surface in a dead-letter queue.
-
-**Risks**
-
-- Duplicating on-chain logic in backend. Backend _reads_ chain; it never _decides_ outcomes.
-
----
-
-### Phase 17 — Realtime Layer
-
-**Goal:** Live probability and price updates without polling.
-
-**Sub-phases**
-17.1 Add WebSocket/SSE server (Express + `ws`, or SSE route).
-17.2 Publish channel events from the indexer (`market:{id}:trades`, `market:{id}:price`).
-17.3 Client subscription protocol + auth for private channels (portfolio).
-17.4 Throttle/coalesce high-frequency updates.
-17.5 Reconnect + replay from last cursor.
-17.6 Load test (many subscribers) + memory/backpressure checks.
-17.7 Document the realtime protocol.
-
-**Deliverables**
-
-- WS/SSE server + pub/sub
-- Reconnect/replay protocol
-- Load test results
-
-**Exit criteria**
-
-- A trade on-chain updates all subscribed clients' implied probability in near real time.
-- Clients can reconnect and catch up without missing events.
-
-**Risks**
-
-- Redis pub/sub vs in-process. Use Redis so it survives restarts and scales.
-
----
-
-### Phase 18 — Frontend Foundation & Wallet
-
-**Goal:** The app shell: wallet connect, auth, layout, design system.
-
-**Sub-phases**
-18.1 Scaffold `packages/web`: Next.js (App Router) + TypeScript + Tailwind + shadcn/ui.
-18.2 Configure thirdweb SDK (client + `ConnectButton`) for Base Sepolia; reads/writes via `useReadContract` / `useSendTransaction`.
-18.3 Implement SIWE login → session cookie → authenticated API client.
-18.4 Build layout: nav, network guard (wrong-network banner), footer, toasts.
-18.5 Set up TanStack Query + typed API client generated from OpenAPI.
-18.6 Build reusable components: `Button`, `Card`, `PriceBadge`, `ProbabilityBar`, `TxButton`.
-18.7 Add loading/error/empty states + skeleton loaders.
-18.8 Add a faucet page to mint mock USDC.
-
-**Deliverables**
-
-- Next.js shell + wallet connect + SIWE session
-- Design system primitives + faucet
-
-**Exit criteria**
-
-- A user can connect a wallet, sign in, and see their address in the nav.
-- Wrong network is detected and handled gracefully.
-
-**Risks**
-
-- Wallet/network config churn. Pin chain + RPC in one config module.
-
----
-
-### Phase 19 — Market Discovery, Trading & Portfolio UI
-
-**Goal:** The full user-facing product loop, end to end.
-
-**Sub-phases**
-19.1 Markets list: cards with question, probability bar, volume, deadline, status filters.
-19.2 Market detail: probability chart, order form, liquidity info, resolution criteria.
-19.3 Trade flow: quote → approve USDC → sign `buy`/`sell` → toast + optimistic update.
-19.4 Realtime price updates wired to the chart.
-19.5 Portfolio: positions, value, PnL, claimable, transaction history.
-19.6 Create-market flow (form → validate → deploy via factory → redirect).
-19.7 Resolution/dispute UI: propose outcome, dispute, finalize, evidence display.
-19.8 Claim flow: show claimable → redeem → update balances.
-19.9 Responsive polish + accessibility (keyboard, contrast, ARIA).
-19.10 E2E test (Playwright): connect → buy → resolve → claim.
-
-**Deliverables**
-
-- Full market/trading/portfolio/create/resolve/claim UI
-- Playwright E2E happy path
-- Responsive + a11y pass
-
-**Exit criteria**
-
-- A new user can go from faucet → buy YES → see probability move → claim after resolution.
-- The Playwright happy path is green in CI.
-
-**Risks**
-
-- This is the biggest phase. Reuse components aggressively; do not gold-plate visuals.
-
----
-
-### Phase 20 — Advanced Features, Deployment & Launch
-
-**Goal:** Ship it: deployed, documented, demoable, and polished.
-
-**Sub-phases**
-20.1 AI market insights: summarize news/sentiment per market (clearly non-authoritative).
-20.2 Gas optimization + EIP-2612 permit-based approvals (if time).
-20.3 Analytics dashboard: volume, probability history, top traders.
-20.4 Deploy top-level contracts to Base Sepolia via thirdweb CLI; verify on Basescan; seed demo markets (factory deploys per-market contracts at runtime).
-20.5 Deploy backend (Fly/Railway) + Neon Postgres + managed Redis; run indexer + workers.
-20.6 Deploy frontend (Vercel) with production env + RPC.
-20.7 Monitoring: uptime, indexer lag, error tracking (Sentry), alerting.
-20.8 Write `README`, architecture diagram, demo video, and "how it works" doc.
-20.9 Final security/limitations writeup + roadmap-next doc.
-20.10 Portfolio package: screenshots, metrics, what-you-learned, resume bullets.
-
-**Deliverables**
-
-- Live app on Base Sepolia
-- Verified contracts + monitoring
-- Docs + demo video + resume package
-
-**Exit criteria**
-
-- A stranger can open the URL, get test USDC, trade, and claim.
-- All services are monitored and restart-safe.
-- You have a 3-minute demo recording and a one-page architecture summary.
-
-**Risks**
-
-- Deployment surprises (RPC limits, CORS, env). Do a staging deploy in Phase 18/19 early.
-
----
-
-## 4. Minimum path (if you must compress)
-
-If time is tight, this subset still produces a credible end-to-end demo:
-
-> Phases **1–8 → 10 → 11 → 13 → 14–15 → 16 (markets/trading/portfolio only) → 18–19 → 20 (deploy only)**
-
-Defer: LP tokens (9), full disputes (12, keep a simple admin resolve), realtime (17), AI/analytics (20.x).
-
-This still shows: contracts, AMM, oracle resolution, indexer, API, and a real UI.
-
----
-
-## 5. Global Definition of Done (the whole project)
-
-PredictX is "done" when all of these are true:
-
-- [ ] Contracts deploy to Base Sepolia, verified, with high test coverage + invariants.
-- [ ] A market can be created, traded (buy + sell), provided with liquidity, resolved, disputed (optional), finalized, and claimed.
-- [ ] The backend indexes all events reorg-safely and serves the full API.
-- [ ] The frontend lets a new user go faucet → trade → resolve → claim without help.
-- [ ] CI is green (lint, typecheck, tests, coverage).
-- [ ] Monitoring, docs, and a demo video exist.
-- [ ] Every "cut" decision in §1 is documented with rationale.
+## 5. Global Definition of Done
+
+PredictX Lite is done when all of these are true:
+
+- [ ] Contracts compile and deploy to Base Sepolia.
+- [ ] Contracts are verified on Basescan.
+- [ ] A user can create a market.
+- [ ] A user can bet YES or NO with mock USDC.
+- [ ] A resolver can resolve after the deadline.
+- [ ] A winner can claim a pro-rata payout.
+- [ ] A loser cannot claim.
+- [ ] Double claims revert.
+- [ ] Rounding never overpays.
+- [ ] At least 15 Foundry tests pass.
+- [ ] Frontend is deployed and works from a fresh wallet.
+- [ ] README documents the trust model and limitations.
+- [ ] Demo video and screenshots exist.
 
 ---
 
 ## 6. Working rules for every phase
 
-1. **One phase = one PR (or a small set of PRs).** Do not start the next until exit criteria pass.
-2. **Test before moving on.** Every phase ends with tests, not just code.
-3. **Update `PROJECT_PLAN.md`** if a decision changes — the docs are the source of truth.
-4. **Never add real money.** Testnet + mock USDC only.
-5. **Commit messages** reference the phase: `feat(phase-07): CPMM swap + invariants`.
-6. **Timebox.** If a phase overruns >50%, cut scope inside it and log the tradeoff.
-7. **Write the Phase Completion Report (§7) before marking a phase done.** No report = not complete.
+1. **One phase = one PR.** Do not start the next phase until the exit criteria pass.
+2. **Test before moving on.** Every phase ends with tests or a manual verification.
+3. **Update `PROJECT_PLAN.md`** if a scope decision changes.
+4. **Never add real money.** Base Sepolia + mock USDC only.
+5. **Commit messages reference the phase:** `feat(phase-01): parimutuel market core`.
+6. **Timebox.** If a phase overruns by more than 50%, cut scope and write down what was cut.
+7. **Write the phase report before marking a phase done.**
 
 ---
 
-## 7. Phase Completion Report (mandatory after every phase)
+## 7. Phase Completion Report
 
-At the **end of every phase**, before starting the next one, write a report. This is not optional —
-a phase is only "complete" when its report exists and the exit criteria are green.
+At the end of every phase, write `reports/lite-phase-XX.md` and append a short summary to
+`reports/PROGRESS.md`.
 
-**Where to put it:**
+**Required sections:**
 
-- Create `reports/phase-XX.md` (one file per phase), **and**
-- Paste the same summary into the phase's PR description, **and**
-- Append a 3-line summary to `reports/PROGRESS.md`.
-
-**What it must contain (all 9 sections):**
-
-| #   | Section                         | What to answer                                                                                                                    |
-| --- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Phase identity**              | Phase number + name; which **part of the project** it belongs to (e.g. "Contracts → AMM", "Backend → Indexer").                   |
-| 2   | **Scope planned**               | The sub-phases and deliverables listed in this file for that phase.                                                               |
-| 3   | **What was done**               | What actually shipped, mapped to the sub-phase numbers.                                                                           |
-| 4   | **What was skipped / deferred** | Anything cut from the phase, **and why** (time, complexity, dependency). Never leave this blank — if nothing was cut, say "none". |
-| 5   | **File changes**                | Added / modified / deleted files, with **lines added / removed** (from `git diff --stat`). Include total LOC delta.               |
-| 6   | **Effects / impact**            | What now works, behavior changes, new risks or tech debt introduced, anything that affects later phases.                          |
-| 7   | **Verification**                | Tests run, coverage %, gas snapshot delta, CI status, manual checks performed.                                                    |
-| 8   | **Progress**                    | Overall project progress: phases complete / 20, rough % done, on-track vs. behind schedule, and what remains.                     |
-| 9   | **Blockers & next**             | Open issues, known bugs, and the exact next phase to start.                                                                       |
+| #   | Section                         | What to answer                                     |
+| --- | ------------------------------- | -------------------------------------------------- |
+| 1   | **Phase identity**              | Phase number + name; which part of Lite it covers. |
+| 2   | **Scope planned**               | Sub-phases and deliverables from this file.        |
+| 3   | **What was done**               | What shipped, mapped to sub-phase numbers.         |
+| 4   | **What was skipped / deferred** | Anything cut and why.                              |
+| 5   | **File changes**                | Added / modified files and lines changed.          |
+| 6   | **Effects / impact**            | What now works, new risks, tech debt.              |
+| 7   | **Verification**                | Tests, coverage, manual checks, deployment status. |
+| 8   | **Progress**                    | Phases complete / 4 and rough % done.              |
+| 9   | **Blockers & next**             | Open issues and the next phase.                    |
 
 **Copy-paste template:**
 
 ```markdown
-# Phase XX — <Name>
+# Lite Phase XX — <Name>
 
 ## 1. Phase identity
 
-- Phase: XX / 20
+- Phase: XX / 4
 - Name: <phase name>
-- Project part: <e.g. Contracts → AMM>
+- Project part: <contracts / frontend / deployment>
 
 ## 2. Scope planned
 
@@ -800,9 +424,6 @@ a phase is only "complete" when its report exists and the exit criteria are gree
 | -------- | -------------- | --------- |
 | Added    | `path/to/file` | +120      |
 | Modified | `path/to/file` | +18 / -4  |
-| Deleted  | `path/to/file` | -30       |
-
-- **Total:** +X / -Y across N files (`git diff --stat`)
 
 ## 6. Effects / impact
 
@@ -814,13 +435,12 @@ a phase is only "complete" when its report exists and the exit criteria are gree
 
 - Tests: <pass/fail counts>
 - Coverage: <X%>
-- Gas snapshot: <delta>
-- CI: <green/red>
 - Manual: <what you clicked/ran>
+- Deployment: <local / Base Sepolia / not deployed>
 
 ## 8. Progress
 
-- Phases complete: XX / 20 (<%>)
+- Phases complete: XX / 4 (<%>)
 - Overall estimate: <%> done
 - Schedule: <on track / X days behind>
 - Remaining: <summary>
@@ -831,24 +451,21 @@ a phase is only "complete" when its report exists and the exit criteria are gree
 - Next phase: Phase YY — <name>
 ```
 
-**How to get the numbers quickly:**
+---
 
-```bash
-# per-phase diff vs. the previous phase tag/commit
-git diff --stat <last-phase-tag>..HEAD
-git diff --shortstat <last-phase-tag>..HEAD      # "N files changed, X insertions(+), Y deletions(-)"
+## 8. What to show in the demo
 
-# coverage + gas (contracts)
-forge coverage --report summary
-forge snapshot --diff
-```
+Keep the demo under 3 minutes:
 
-Tag each completed phase so diffs are trivial next time:
+1. Connect wallet.
+2. Get mock USDC.
+3. Create a market.
+4. Bet YES from wallet A.
+5. Bet NO from wallet B.
+6. Show the pools.
+7. Resolve as the resolver.
+8. Claim from the winning wallet.
+9. Show the losing wallet cannot claim.
+10. Open Basescan and show the transactions.
 
-```bash
-git tag phase-07-complete
-```
-
-**Rule of thumb for §4:** if you skipped something from the phase's plan, it must also be
-re-added to a later phase in this file (or moved to the "deferred" list in `PROJECT_PLAN.md`).
-Nothing silently disappears.
+That is the entire project story. Do not add features before this works.

@@ -12,6 +12,9 @@ contract OutcomeToken is ERC20 {
     /// @notice USDC uses 6 decimals; outcome tokens match it (ADR 0003).
     uint8 public constant DECIMALS = 6;
 
+    /// @notice Distinguishes outcome tokens from LP tokens for indexers and coverage tooling.
+    string public constant TOKEN_KIND = "OUTCOME";
+
     /// @notice The only address allowed to mint and burn.
     address public immutable market;
 

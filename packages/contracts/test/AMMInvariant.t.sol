@@ -21,12 +21,13 @@ contract AMMInvariantTest is Test {
     address internal creator = makeAddr("creator");
     address internal resolver = makeAddr("resolver");
     address internal actor = makeAddr("actor");
+    address internal treasury = makeAddr("treasury");
     uint64 internal deadline;
 
     function setUp() public {
         vm.warp(1_700_000_000);
         usdc = new MockUSDC(address(this));
-        factory = new MarketFactory(address(usdc));
+        factory = new MarketFactory(address(usdc), treasury);
         deadline = uint64(block.timestamp + 30 days);
 
         vm.prank(creator);

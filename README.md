@@ -4,10 +4,12 @@ A decentralized, oracle-powered **binary prediction market** on **Base Sepolia**
 Real ERC-20 YES/NO outcome tokens, a fully-collateralized **CPMM** AMM, **Chainlink** oracle
 resolution, a reorg-safe event indexer, and a Next.js + thirdweb frontend.
 
-> **Status:** Phase 7 of 20 — the CPMM pricing engine. Markets can be created, seeded with
-> liquidity, traded (buy/sell YES or NO), split/merged 1:1 with USDC, closed, proposed, and
-> finalized on-chain. Slippage/deadline, LP tokens, and fee routing arrive in Phases 8–9; the backend
-> and web arrive later. See `PHASES.md` for the full roadmap.
+> **Status:** Phase 11 of 20 — settlement and oracle resolution. Markets can be created, seeded,
+> traded (buy/sell YES or NO with slippage/deadline bounds), split/merged 1:1 with USDC, provided
+> with LP liquidity, resolved by a Chainlink-backed `OracleResolver` or `ManualResolver`, closed,
+> proposed, and finalized on-chain. Winners redeem 1 USDC per share and LPs settle their winning
+> reserve share. Protocol fees route to the treasury, LP fees accrue via reserve growth, and LP
+> shares are ERC-20s. The backend and web arrive later. See `PHASES.md` for the full roadmap.
 
 ## Stack
 
@@ -82,14 +84,18 @@ PredictX/
 └── pnpm-workspace.yaml
 ```
 
-## What works right now (Phase 6)
+## What works right now (Phase 11)
 
 - `@predictx/shared` — chain constants, enums, and types, built with `tsc` and tested with Vitest.
 - `@predictx/backend` — minimal Express app exposing `GET /health`, with a Vitest + Supertest test.
 - `@predictx/contracts` — `MockUSDC` (6 decimals, faucet), `MarketFactory` (validation, cooldown,
-  sequential ids, registry), `PredictionMarket` with the lifecycle state machine, per-market YES/NO
-  `OutcomeToken`s (6 decimals), and 1:1 `split`/`merge` with a stateful collateral invariant, with
-  61 Foundry tests.
+  sequential ids, registry, treasury), `PredictionMarket` with the lifecycle state machine, CPMM
+  buy/sell with slippage/deadline bounds, protocol fee routing, per-market YES/NO `OutcomeToken`s
+  (6 decimals), per-market ERC-20 `LPToken`s, `addLiquidity`/`removeLiquidity`, 1:1
+  `split`/`merge`, post-finalization `redeem`/`redeemLiquidity`, `OracleResolver` (Chainlink
+  `AggregatorV3`), `ManualResolver`, and a `MarketDeployer` that keeps `MarketFactory` under the
+  EIP-170 runtime limit, with 179 Foundry tests (plus one env-gated Base Sepolia fork test)
+  including four stateful invariants.
 - `@predictx/web` — placeholder; filled in Phase 18.
 - Lint, typecheck, build, test, and formatting enforced in CI.
 - Husky pre-commit runs `lint-staged` (ESLint + Prettier on staged files).
@@ -106,6 +112,7 @@ make deploy-local # terminal 2: deploy MockUSDC + MarketFactory
 - [`PROJECT_PLAN.md`](./PROJECT_PLAN.md) — what we're building and how.
 - [`PHASES.md`](./PHASES.md) — 20-phase execution roadmap + phase report rules.
 - [`docs/vision.md`](./docs/vision.md) — one-page vision and scope.
+- [`docs/resolution.md`](./docs/resolution.md) — oracle/manual resolution, validation, and fork test.
 - [`docs/demo-script.md`](./docs/demo-script.md) — the end-to-end demo.
 - [`docs/adr/`](./docs/adr/) — architecture decision records.
 

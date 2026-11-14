@@ -22,12 +22,13 @@ contract AMMTest is Test {
     address internal creator = makeAddr("creator");
     address internal resolver = makeAddr("resolver");
     address internal alice = makeAddr("alice");
+    address internal treasury = makeAddr("treasury");
     uint64 internal deadline;
 
     function setUp() public {
         vm.warp(1_700_000_000);
         usdc = new MockUSDC(address(this));
-        factory = new MarketFactory(address(usdc));
+        factory = new MarketFactory(address(usdc), treasury);
         harness = new AMMHarness();
         deadline = uint64(block.timestamp + 30 days);
 
@@ -60,6 +61,10 @@ contract AMMTest is Test {
         });
     }
 
+    function _protocolFee(uint256 fee) internal view returns (uint256) {
+        return (fee * market.PROTOCOL_FEE_SHARE_BPS()) / 10_000;
+    }
+
     function _k() internal view returns (uint256) {
         (uint256 reserveYes, uint256 reserveNo) = market.getReserves();
         return reserveYes * reserveNo;
@@ -70,6 +75,20 @@ contract AMMTest is Test {
         assertEq(market.yesToken().balanceOf(address(market)), reserveYes);
         assertEq(market.noToken().balanceOf(address(market)), reserveNo);
         assertTrue(market.isFullyBacked());
+    }
+
+    function _buy(PredictionMarket target, Outcome outcome, uint256 amount)
+        internal
+        returns (uint256)
+    {
+        return target.buy(outcome, amount, 0, type(uint256).max);
+    }
+
+    function _sell(PredictionMarket target, Outcome outcome, uint256 amount)
+        internal
+        returns (uint256)
+    {
+        return target.sell(outcome, amount, 0, type(uint256).max);
     }
 
     function test_SeedLiquiditySetsPool() public view {
@@ -106,13 +125,15 @@ contract AMMTest is Test {
         uint256 kBefore = _k();
 
         vm.prank(alice);
-        uint256 sharesOut = market.buy(Outcome.Yes, amountIn);
+        uint256 sharesOut = _buy(market, Outcome.Yes, amountIn);
 
         (uint256 reserveYes, uint256 reserveNo) = market.getReserves();
         assertEq(sharesOut, quotedShares);
         assertEq(market.yesToken().balanceOf(alice), quotedShares);
         assertEq(reserveNo, INITIAL_LIQUIDITY + amountIn);
-        assertEq(reserveYes, INITIAL_LIQUIDITY - (quotedShares - amountIn));
+        assertEq(
+            reserveYes, INITIAL_LIQUIDITY - (quotedShares - amountIn) - _protocolFee(quotedFee)
+        );
         assertGt(quotedFee, 0);
         assertGt(market.priceYes(), priceBefore);
         assertGe(_k(), kBefore);
@@ -122,16 +143,16 @@ contract AMMTest is Test {
     function test_BuyNoLowersYesPrice() public {
         uint256 amountIn = 100e6;
         uint256 priceBefore = market.priceYes();
-        (uint256 quotedShares,) = market.quoteBuy(Outcome.No, amountIn);
+        (uint256 quotedShares, uint256 quotedFee) = market.quoteBuy(Outcome.No, amountIn);
 
         vm.prank(alice);
-        uint256 sharesOut = market.buy(Outcome.No, amountIn);
+        uint256 sharesOut = _buy(market, Outcome.No, amountIn);
 
         (uint256 reserveYes, uint256 reserveNo) = market.getReserves();
         assertEq(sharesOut, quotedShares);
         assertEq(market.noToken().balanceOf(alice), quotedShares);
         assertEq(reserveYes, INITIAL_LIQUIDITY + amountIn);
-        assertEq(reserveNo, INITIAL_LIQUIDITY - (quotedShares - amountIn));
+        assertEq(reserveNo, INITIAL_LIQUIDITY - (quotedShares - amountIn) - _protocolFee(quotedFee));
         assertLt(market.priceYes(), priceBefore);
         _assertReservesMatchBalances();
     }
@@ -142,7 +163,7 @@ contract AMMTest is Test {
         uint256 kBefore = _k();
 
         vm.prank(alice);
-        uint256 sharesOut = market.buy(Outcome.Yes, amountIn);
+        uint256 sharesOut = _buy(market, Outcome.Yes, amountIn);
 
         assertEq(sharesOut, quotedShares);
         assertGt(quotedFee, 0);
@@ -158,7 +179,7 @@ contract AMMTest is Test {
         uint256 kBefore = _k();
 
         vm.prank(alice);
-        uint256 collateralOut = market.sell(Outcome.Yes, 100e6);
+        uint256 collateralOut = _sell(market, Outcome.Yes, 100e6);
 
         assertEq(collateralOut, quotedCollateral);
         assertGt(quotedCollateral, 0);
@@ -178,7 +199,7 @@ contract AMMTest is Test {
         uint256 usdcBefore = usdc.balanceOf(alice);
 
         vm.prank(alice);
-        uint256 collateralOut = market.sell(Outcome.Yes, 500e6);
+        uint256 collateralOut = _sell(market, Outcome.Yes, 500e6);
 
         assertEq(collateralOut, quotedCollateral);
         assertEq(usdc.balanceOf(alice), usdcBefore + quotedCollateral);
@@ -191,11 +212,11 @@ contract AMMTest is Test {
         uint256 usdcBefore = usdc.balanceOf(alice);
 
         vm.prank(alice);
-        uint256 sharesOut = market.buy(Outcome.Yes, amountIn);
+        uint256 sharesOut = _buy(market, Outcome.Yes, amountIn);
 
         (uint256 quotedCollateral,) = market.quoteSell(Outcome.Yes, sharesOut);
         vm.prank(alice);
-        uint256 collateralOut = market.sell(Outcome.Yes, sharesOut);
+        uint256 collateralOut = _sell(market, Outcome.Yes, sharesOut);
 
         assertEq(collateralOut, quotedCollateral);
         assertLt(collateralOut, amountIn);
@@ -211,9 +232,9 @@ contract AMMTest is Test {
 
         for (uint256 i = 0; i < 5; i++) {
             vm.prank(alice);
-            uint256 sharesOut = market.buy(Outcome.Yes, 50e6);
+            uint256 sharesOut = _buy(market, Outcome.Yes, 50e6);
             vm.prank(alice);
-            market.sell(Outcome.Yes, sharesOut);
+            _sell(market, Outcome.Yes, sharesOut);
         }
 
         assertLe(usdc.balanceOf(alice), usdcBefore);
@@ -223,9 +244,9 @@ contract AMMTest is Test {
 
     function test_BothSidesKeepReservesBacked() public {
         vm.prank(alice);
-        market.buy(Outcome.Yes, 100e6);
+        _buy(market, Outcome.Yes, 100e6);
         vm.prank(alice);
-        market.buy(Outcome.No, 200e6);
+        _buy(market, Outcome.No, 200e6);
 
         _assertReservesMatchBalances();
         assertGt(market.yesToken().balanceOf(alice), 0);
@@ -235,25 +256,25 @@ contract AMMTest is Test {
     function test_RevertWhen_BuyZero() public {
         vm.prank(alice);
         vm.expectRevert(PredictionMarket.ZeroAmount.selector);
-        market.buy(Outcome.Yes, 0);
+        _buy(market, Outcome.Yes, 0);
     }
 
     function test_RevertWhen_SellZero() public {
         vm.prank(alice);
         vm.expectRevert(PredictionMarket.ZeroAmount.selector);
-        market.sell(Outcome.Yes, 0);
+        _sell(market, Outcome.Yes, 0);
     }
 
     function test_RevertWhen_BuyUnresolved() public {
         vm.prank(alice);
         vm.expectRevert(PredictionMarket.InvalidOutcome.selector);
-        market.buy(Outcome.Unresolved, 100e6);
+        _buy(market, Outcome.Unresolved, 100e6);
     }
 
     function test_RevertWhen_SellUnresolved() public {
         vm.prank(alice);
         vm.expectRevert(PredictionMarket.InvalidOutcome.selector);
-        market.sell(Outcome.Unresolved, 100e6);
+        _sell(market, Outcome.Unresolved, 100e6);
     }
 
     function test_RevertWhen_QuoteBuyZero() public {
@@ -285,7 +306,7 @@ contract AMMTest is Test {
                 PredictionMarket.InvalidState.selector, MarketStatus.Created, MarketStatus.Active
             )
         );
-        fresh.buy(Outcome.Yes, 100e6);
+        _buy(fresh, Outcome.Yes, 100e6);
     }
 
     function test_RevertWhen_BuyAfterClose() public {
@@ -298,7 +319,7 @@ contract AMMTest is Test {
                 PredictionMarket.InvalidState.selector, MarketStatus.Closed, MarketStatus.Active
             )
         );
-        market.buy(Outcome.Yes, 100e6);
+        _buy(market, Outcome.Yes, 100e6);
     }
 
     function test_RevertWhen_SellAfterClose() public {
@@ -313,7 +334,7 @@ contract AMMTest is Test {
                 PredictionMarket.InvalidState.selector, MarketStatus.Closed, MarketStatus.Active
             )
         );
-        market.sell(Outcome.Yes, 100e6);
+        _sell(market, Outcome.Yes, 100e6);
     }
 
     function test_RevertWhen_BuyWithoutApproval() public {
@@ -322,7 +343,7 @@ contract AMMTest is Test {
 
         vm.prank(stranger);
         vm.expectRevert();
-        market.buy(Outcome.Yes, 100e6);
+        _buy(market, Outcome.Yes, 100e6);
     }
 
     function test_RevertWhen_SellWithoutApproval() public {
@@ -335,7 +356,7 @@ contract AMMTest is Test {
 
         vm.prank(stranger);
         vm.expectRevert();
-        market.sell(Outcome.Yes, 100e6);
+        _sell(market, Outcome.Yes, 100e6);
     }
 
     function test_RevertWhen_PriceYesEmpty() public {
@@ -356,7 +377,7 @@ contract AMMTest is Test {
         (uint256 quotedShares,) = market.quoteBuy(Outcome.Yes, amountIn);
 
         vm.prank(alice);
-        uint256 sharesOut = market.buy(Outcome.Yes, amountIn);
+        uint256 sharesOut = _buy(market, Outcome.Yes, amountIn);
 
         assertEq(sharesOut, quotedShares);
         assertGe(market.priceYes(), priceBefore);
@@ -376,7 +397,7 @@ contract AMMTest is Test {
         vm.assume(quotedCollateral > 0);
 
         vm.prank(alice);
-        uint256 collateralOut = market.sell(Outcome.Yes, sellAmount);
+        uint256 collateralOut = _sell(market, Outcome.Yes, sellAmount);
 
         assertEq(collateralOut, quotedCollateral);
         assertLt(market.priceYes(), priceBefore);

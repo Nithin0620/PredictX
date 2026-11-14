@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "echo \"[web] placeholder — Next.js scaffold lands in Phase 18\"",
-    "dev": "echo \"[web] placeholder — Next.js scaffold lands in Phase 18\"",
-    "typecheck": "echo \"[web] placeholder — Next.js scaffold lands in Phase 18\"",
-    "test": "echo \"[web] placeholder — Playwright tests land in Phase 19\"",
+    "build": "echo \"[web] placeholder — Next.js Lite scaffold lands in Phase 3\"",
+    "dev": "echo \"[web] placeholder — Next.js Lite scaffold lands in Phase 3\"",
+    "typecheck": "echo \"[web] placeholder — Next.js Lite scaffold lands in Phase 3\"",
+    "test": "echo \"[web] placeholder — Playwright Lite tests land in Phase 4\"",
     "clean": "echo \"[web] nothing to clean yet\""
   }
 }

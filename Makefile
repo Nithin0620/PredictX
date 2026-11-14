@@ -1,5 +1,5 @@
 .PHONY: help install dev build test lint typecheck format format-check clean \
-	chain chain-fork deploy-local contracts-deps contracts-test indexer-dev
+	chain chain-fork deploy-local contracts-deps contracts-test
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -31,14 +31,13 @@ format-check: ## Check formatting without writing
 clean: ## Remove build artifacts
 	pnpm clean
 
-# --- Contracts / chain ------------------------------------------------------
 chain: ## Start a local Anvil chain (deterministic accounts, chain id 31337)
 	anvil --chain-id 31337
 
 chain-fork: ## Fork Base Sepolia locally (requires BASE_SEPOLIA_RPC_URL)
 	anvil --chain-id 31337 --fork-url $${BASE_SEPOLIA_RPC_URL}
 
-deploy-local: ## Deploy the placeholder contract to local Anvil
+deploy-local: ## Deploy MockUSDC to local Anvil
 	pnpm --filter @predictx/contracts deploy:local
 
 contracts-deps: ## Install pinned Foundry deps into packages/contracts/lib
@@ -47,6 +46,3 @@ contracts-deps: ## Install pinned Foundry deps into packages/contracts/lib
 
 contracts-test: ## Run contract tests with the heavier CI profile
 	pnpm --filter @predictx/contracts test:ci
-
-indexer-dev: ## Run the blockchain indexer in watch mode (Phase 15)
-	@echo "Phase 15: add indexer dev command here"

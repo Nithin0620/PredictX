@@ -109,55 +109,59 @@ hold funds and pay winners according to the parimutuel formula.
 
 ## 5. Technology stack
 
-| Layer          | Choice                                           | Notes                                  |
-| -------------- | ------------------------------------------------ | -------------------------------------- |
-| Chain          | **Base Sepolia**                                 | Testnet only                           |
-| Contracts      | **Solidity 0.8.24 + Foundry**                    | Unit tests and fuzz tests              |
-| Contract libs  | **OpenZeppelin Contracts**                       | ERC-20, SafeERC20, ReentrancyGuard     |
-| Collateral     | **MockUSDC**                                     | 6 decimals, owner mint / faucet        |
-| Frontend       | **Next.js App Router + TypeScript**              | No backend                             |
-| Web3 client    | **wagmi + viem**                                 | Reads and writes                       |
-| Wallet UI      | **RainbowKit or ConnectKit**                     | Wallet connection                      |
-| Styling        | **Tailwind CSS**                                 | Keep the UI small                      |
-| Deployment     | **Foundry script + Basescan verification**       | Contracts                              |
-| Web deployment | **Vercel**                                       | Frontend                               |
-| Repo           | **Single small repo or `predictx-lite/` folder** | No Turborepo, no monorepo for this MVP |
+| Layer          | Choice                                       | Notes                                |
+| -------------- | -------------------------------------------- | ------------------------------------ |
+| Chain          | **Base Sepolia**                             | Testnet only                         |
+| Contracts      | **Solidity 0.8.24 + Foundry**                | Unit tests and fuzz tests            |
+| Contract libs  | **OpenZeppelin Contracts**                   | ERC-20, SafeERC20, ReentrancyGuard   |
+| Collateral     | **MockUSDC**                                 | 6 decimals, owner mint / faucet      |
+| Frontend       | **Next.js App Router + TypeScript**          | No backend                           |
+| Web3 client    | **wagmi + viem**                             | Reads and writes                     |
+| Wallet UI      | **RainbowKit or ConnectKit**                 | Wallet connection                    |
+| Styling        | **Tailwind CSS**                             | Keep the UI small                    |
+| Deployment     | **Foundry script + Basescan verification**   | Contracts                            |
+| Web deployment | **Vercel**                                   | Frontend                             |
+| Repo           | **Existing workspace, contracts + web only** | Keep Lite small; no backend packages |
 
 ---
 
 ## 6. Repository layout
 
 ```text
-predictx-lite/
-├── contracts/
-│   ├── foundry.toml
-│   ├── remappings.txt
-│   ├── src/
-│   │   ├── MockUSDC.sol
-│   │   ├── PredictXMarket.sol
-│   │   └── PredictXFactory.sol
-│   ├── test/
-│   │   ├── PredictXMarket.t.sol
-│   │   └── PredictXFactory.t.sol
-│   └── script/
-│       └── DeployLite.s.sol
-├── web/
-│   ├── app/
-│   │   ├── page.tsx
-│   │   ├── create/page.tsx
-│   │   └── market/[address]/page.tsx
-│   ├── components/
-│   │   ├── MarketCard.tsx
-│   │   ├── BetForm.tsx
-│   │   └── ClaimButton.tsx
-│   ├── lib/
-│   │   ├── contracts.ts
-│   │   └── wagmi.ts
-│   └── .env.local.example
+PredictX/
+├── packages/
+│   ├── contracts/
+│   │   ├── foundry.toml
+│   │   ├── remappings.txt
+│   │   ├── src/
+│   │   │   ├── MockUSDC.sol
+│   │   │   ├── PredictXMarket.sol
+│   │   │   └── PredictXFactory.sol
+│   │   ├── test/
+│   │   │   ├── PredictXMarket.t.sol
+│   │   │   └── PredictXFactory.t.sol
+│   │   └── script/
+│   │       └── DeployLite.s.sol
+│   └── web/
+│       ├── app/
+│       │   ├── page.tsx
+│       │   ├── create/page.tsx
+│       │   └── market/[address]/page.tsx
+│       ├── components/
+│       │   ├── MarketCard.tsx
+│       │   ├── BetForm.tsx
+│       │   └── ClaimButton.tsx
+│       ├── lib/
+│       │   ├── contracts.ts
+│       │   └── wagmi.ts
+│       └── .env.local.example
+├── PHASES.md
+├── PROJECT_PLAN.md
 └── README.md
 ```
 
-Keep the full PredictX repo separate. Do not mix Lite contracts into the full 20-phase codebase.
+The full AMM/oracle/backend version is preserved on `master`. Do not mix those contracts into the
+Lite branch.
 
 ---
 

@@ -12,7 +12,8 @@
     "fmt": "forge fmt",
     "snapshot": "forge snapshot",
     "coverage": "forge coverage --report summary",
-    "deploy:local": "forge script script/DeployLocal.s.sol:DeployLocal --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast",
+    "deploy:local": "forge script script/DeployLite.s.sol:DeployLite --rpc-url ${RPC_URL:-http://127.0.0.1:8545} --broadcast",
+    "deploy:sepolia": "forge script script/DeployLite.s.sol:DeployLite --rpc-url ${BASE_SEPOLIA_RPC_URL} --broadcast --verify",
     "clean": "forge clean"
   }
 }

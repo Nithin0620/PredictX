@@ -1,29 +1,13 @@
 # @predictx/contracts
 
-Solidity contracts for PredictX, built and tested with **Foundry**. Deployed to **Base Sepolia**
-via the **thirdweb CLI** (see `docs/adr/0007-thirdweb-deployment.md`).
+Foundry workspace for **PredictX Lite** on **Base Sepolia**.
 
-## Status
+The full AMM/LP/oracle/dispute contracts were removed from the Lite branch. Only the reusable
+`MockUSDC` collateral token remains. The Lite contracts will be added here:
 
-Phase 11: `MockUSDC` (6-decimal testnet faucet), `MarketFactory` (validated, permissionless
-creation with a per-creator cooldown, sequential ids, enumerable registry, treasury), and
-`MarketDeployer` (keeps factory runtime below the EIP-170 limit). `PredictionMarket` implements the
-lifecycle state machine (`Created → Active → Closed → Proposed → Finalized`), per-market
-`OutcomeToken` YES/NO ERC-20s, per-market `LPToken` ERC-20s, 1:1 collateral `split`/`merge`, and a
-constant-product AMM (`seedLiquidity`, `buy`, `sell`, `quoteBuy`, `quoteSell`, `getReserves`,
-`priceYes`). Buys/sells enforce slippage and deadline bounds, are `nonReentrant`, and route 20% of
-the output fee to the treasury in the fee outcome token; the LP share stays in the pool.
-`addLiquidity`/`removeLiquidity` mint/burn proportional LP shares while `Active`. After
-finalization, `redeem`/`redeem(uint256)` burn winning shares for 1 USDC each and
-`redeemLiquidity` pays LPs the winning reserve share. `OracleResolver` resolves Chainlink
-`AggregatorV3` price-threshold markets; `ManualResolver` is the owner-controlled fallback. The
-dispute path is Phase 12. See `docs/amm.md`, `docs/resolution.md`, and `docs/state-machine.md`.
-
-179 contract tests (plus one env-gated Base Sepolia fork test) cover the factory, deployer, tokens,
-collateral, lifecycle matrix, AMM quotes/trades, slippage/deadline, protocol fee routing, LP
-add/remove, settlement claims/LP settlement, oracle validation/comparators, manual resolution, and
-four stateful invariants (collateral backing, CPMM `k`/reserve sync, LP solvency, settlement
-payout bounds).
+- `PredictXMarket.sol` — parimutuel YES/NO pools, resolution, pro-rata claims
+- `PredictXFactory.sol` — market registry
+- `script/DeployLite.s.sol` — deployment script
 
 ## Prerequisites
 
@@ -35,8 +19,6 @@ foundryup
 
 ## Install dependencies
 
-Dependencies are cloned into `lib/` (git-ignored) and pinned:
-
 ```bash
 make contracts-deps
 # or, from this directory:
@@ -47,16 +29,15 @@ forge install OpenZeppelin/openzeppelin-contracts@v5.7.0 --no-git --shallow
 ## Commands
 
 ```bash
-forge build          # compile
-forge test           # run tests
-FOUNDRY_PROFILE=ci forge test   # heavier fuzz/invariant settings
-forge fmt --check    # format check
-forge fmt            # format
-forge snapshot       # gas snapshot
+forge build
+forge test
+forge fmt --check
+forge fmt
+forge snapshot
 forge coverage --report summary
 ```
 
-Or via the monorepo:
+Via the workspace:
 
 ```bash
 pnpm --filter @predictx/contracts build
@@ -69,21 +50,23 @@ pnpm --filter @predictx/contracts test
 # terminal 1 — deterministic Anvil accounts on chain id 31337
 make chain
 
-# terminal 2 — deploy MockUSDC + MarketFactory
+# terminal 2 — deploy MockUSDC
 make deploy-local
 ```
 
-Anvil's well-known account #0 is the default deployer for local runs
-(`0xac09...ff80` — test key, never use on a real network). Override with `PRIVATE_KEY`.
+Anvil account #0 is the default deployer for local runs. Override with `PRIVATE_KEY`.
 
 ## Layout
 
-```
+```text
 packages/contracts/
 ├── foundry.toml
-├── src/          # Solidity sources
-├── test/         # tests (+ test/utils helpers, test/invariant handlers)
-├── script/       # deploy scripts (Foundry Script)
+├── src/
+│   └── MockUSDC.sol
+├── test/
+│   └── MockUSDC.t.sol
+├── script/
+│   └── DeployLite.s.sol
 └── lib/          # dependencies (git-ignored; restore with `make contracts-deps`)
 ```
 

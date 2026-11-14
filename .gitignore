@@ -19,7 +19,6 @@ coverage/
 cache/
 broadcast/
 lib/
-!packages/shared/src/abis/
 
 # Env / secrets
 .env

@@ -1,13 +1,19 @@
-# @predictx/web (placeholder)
+# @predictx/web
 
-The Next.js frontend is scaffolded in **Phase 18** (`PHASES.md`).
+Next.js frontend for **PredictX Lite**.
+
+The full frontend was not started. This package will contain:
+
+- market list
+- market detail with YES/NO betting
+- create market
+- resolve and claim actions
 
 Planned stack:
 
-- Next.js (App Router) + TypeScript
-- thirdweb SDK (wallet connect + contract reads/writes)
-- TanStack Query
-- Tailwind CSS + shadcn/ui + Recharts
+- Next.js App Router + TypeScript
+- wagmi + viem
+- RainbowKit or ConnectKit
+- Tailwind CSS
 
-Nothing here yet — this placeholder exists so the monorepo, Turborepo pipeline, and CI can
-include the web workspace from day one.
+No backend, indexer, or database. The app reads directly from Base Sepolia.

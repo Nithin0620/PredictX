@@ -1,121 +1,82 @@
-# PredictX
+# PredictX Lite
 
-A decentralized, oracle-powered **binary prediction market** on **Base Sepolia** (testnet only).
-Real ERC-20 YES/NO outcome tokens, a fully-collateralized **CPMM** AMM, **Chainlink** oracle
-resolution, a reorg-safe event indexer, and a Next.js + thirdweb frontend.
+A student-sized **parimutuel binary prediction market** on **Base Sepolia** (testnet only).
 
-> **Status:** Phase 11 of 20 — settlement and oracle resolution. Markets can be created, seeded,
-> traded (buy/sell YES or NO with slippage/deadline bounds), split/merged 1:1 with USDC, provided
-> with LP liquidity, resolved by a Chainlink-backed `OracleResolver` or `ManualResolver`, closed,
-> proposed, and finalized on-chain. Winners redeem 1 USDC per share and LPs settle their winning
-> reserve share. Protocol fees route to the treasury, LP fees accrue via reserve growth, and LP
-> shares are ERC-20s. The backend and web arrive later. See `PHASES.md` for the full roadmap.
+Users create YES/NO markets, bet mock USDC, a trusted resolver picks the outcome after the
+deadline, and winners split the total pool pro-rata. There is no AMM, no LP token, no oracle, no
+dispute system, and no backend.
+
+> **Status:** Lite cleanup complete. The full AMM/oracle/backend version is preserved on `master`.
+> The active branch is `main/lite`.
 
 ## Stack
 
-| Layer     | Tech                                                                   |
-| --------- | ---------------------------------------------------------------------- |
-| Contracts | Solidity + Foundry (test) · thirdweb CLI (deploy)                      |
-| Backend   | Node.js + TypeScript + Express · Prisma · Neon Postgres · Redis/BullMQ |
-| Indexer   | viem `getLogs` + reorg handling                                        |
-| Frontend  | Next.js + TypeScript + thirdweb SDK · Tailwind/shadcn                  |
-| Monorepo  | pnpm workspaces + Turborepo                                            |
-
-## Prerequisites
-
-- **Node.js** >= 20 (see `.nvmrc`)
-- **pnpm** 11 (`corepack enable` then `corepack prepare pnpm@11 --activate`)
-- **Git**
-- (Phase 3+) **Foundry** (`curl -L https://foundry.paradigm.xyz | bash && foundryup`)
-- (Phase 14+) **Docker** for local Redis (Neon Postgres is remote)
-
-## Getting started
-
-```bash
-# 1. Install dependencies (also sets up Husky git hooks)
-pnpm install
-
-# 2. Copy environment templates
-cp .env.example .env
-cp packages/backend/.env.example packages/backend/.env   # Phase 14
-
-# 3. Install pinned contract dependencies (Foundry lib/)
-make contracts-deps
-
-# 4. Run the full verification pipeline
-pnpm lint
-pnpm typecheck
-pnpm build
-pnpm test
-```
-
-> Foundry must be installed and `~/.foundry/bin` on your `PATH` for the contracts workspace.
-> `make contracts-deps` restores `packages/contracts/lib/` (git-ignored) at pinned versions.
-
-## Common commands
-
-| Command             | What it does                            |
-| ------------------- | --------------------------------------- |
-| `pnpm dev`          | Run all dev servers (turbo, persistent) |
-| `pnpm build`        | Build every package                     |
-| `pnpm test`         | Run every package's tests               |
-| `pnpm lint`         | ESLint across the workspace             |
-| `pnpm typecheck`    | TypeScript across the workspace         |
-| `pnpm format`       | Prettier write                          |
-| `pnpm format:check` | Prettier check (used in CI)             |
-| `pnpm clean`        | Remove build artifacts                  |
-| `make help`         | List Make targets                       |
+| Layer      | Tech                              |
+| ---------- | --------------------------------- |
+| Contracts  | Solidity 0.8.24 + Foundry         |
+| Collateral | Mock USDC (6 decimals)            |
+| Frontend   | Next.js + TypeScript + wagmi/viem |
+| Chain      | Base Sepolia                      |
 
 ## Repository layout
 
-```
+```text
 PredictX/
-├── docs/                 # vision, demo script, ADRs
-├── reports/              # per-phase completion reports + progress log
 ├── packages/
-│   ├── contracts/        # Solidity + Foundry            (Phase 3+)
-│   ├── shared/           # ABIs, types, constants        (Phase 2)
-│   ├── backend/          # Express API + indexer/workers (Phase 14+)
-│   └── web/              # Next.js frontend              (Phase 18+)
-├── .github/workflows/    # CI
-├── PHASES.md             # 20-phase roadmap
-├── PROJECT_PLAN.md       # what we're building & how
-├── turbo.json
-└── pnpm-workspace.yaml
+│   ├── contracts/        # MockUSDC + Lite contracts (in progress)
+│   └── web/              # Next.js Lite frontend (placeholder)
+├── PHASES.md             # 4-phase Lite roadmap
+├── PROJECT_PLAN.md       # Lite product plan
+└── .github/workflows/    # CI
 ```
 
-## What works right now (Phase 11)
+## Prerequisites
 
-- `@predictx/shared` — chain constants, enums, and types, built with `tsc` and tested with Vitest.
-- `@predictx/backend` — minimal Express app exposing `GET /health`, with a Vitest + Supertest test.
-- `@predictx/contracts` — `MockUSDC` (6 decimals, faucet), `MarketFactory` (validation, cooldown,
-  sequential ids, registry, treasury), `PredictionMarket` with the lifecycle state machine, CPMM
-  buy/sell with slippage/deadline bounds, protocol fee routing, per-market YES/NO `OutcomeToken`s
-  (6 decimals), per-market ERC-20 `LPToken`s, `addLiquidity`/`removeLiquidity`, 1:1
-  `split`/`merge`, post-finalization `redeem`/`redeemLiquidity`, `OracleResolver` (Chainlink
-  `AggregatorV3`), `ManualResolver`, and a `MarketDeployer` that keeps `MarketFactory` under the
-  EIP-170 runtime limit, with 179 Foundry tests (plus one env-gated Base Sepolia fork test)
-  including four stateful invariants.
-- `@predictx/web` — placeholder; filled in Phase 18.
-- Lint, typecheck, build, test, and formatting enforced in CI.
-- Husky pre-commit runs `lint-staged` (ESLint + Prettier on staged files).
+- Node.js >= 20
+- pnpm 11
+- Foundry (`curl -L https://foundry.paradigm.xyz | bash && foundryup`)
 
-### Local chain
+## Setup
 
 ```bash
-make chain        # terminal 1: Anvil on chain id 31337 (deterministic accounts)
-make deploy-local # terminal 2: deploy MockUSDC + MarketFactory
+pnpm install
+make contracts-deps
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm test
 ```
 
-## Docs
+## Local chain
 
-- [`PROJECT_PLAN.md`](./PROJECT_PLAN.md) — what we're building and how.
-- [`PHASES.md`](./PHASES.md) — 20-phase execution roadmap + phase report rules.
-- [`docs/vision.md`](./docs/vision.md) — one-page vision and scope.
-- [`docs/resolution.md`](./docs/resolution.md) — oracle/manual resolution, validation, and fork test.
-- [`docs/demo-script.md`](./docs/demo-script.md) — the end-to-end demo.
-- [`docs/adr/`](./docs/adr/) — architecture decision records.
+```bash
+# terminal 1
+make chain
+
+# terminal 2
+make deploy-local
+```
+
+## Contracts
+
+```bash
+cd packages/contracts
+forge build
+forge test
+forge fmt --check
+```
+
+## What is next
+
+1. Implement `PredictXMarket` and `PredictXFactory`.
+2. Add 15–20 Foundry tests.
+3. Build the Next.js frontend.
+4. Deploy to Base Sepolia and record the demo.
+
+See [`PHASES.md`](./PHASES.md) for the detailed plan.
 
 ## Safety
 
-Testnet only. Mock USDC only. No real money. No mainnet deployment.
+- Testnet only. Mock USDC has no real value.
+- The resolver is trusted. If it never resolves, funds stay locked.
+- There is no dispute path and no audit.

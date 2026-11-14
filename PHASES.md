@@ -68,7 +68,7 @@ contract tests pass. Do not start Phase 3 until the contracts are deployed local
 **Goal:** Implement the smallest complete market: create, bet, resolve, claim.
 
 **Sub-phases**
-1.1 Create a clean `predictx-lite/contracts` Foundry project. Do not add a backend or monorepo.
+1.1 Use `packages/contracts` as the Lite Foundry project. Remove full-protocol contracts and tests.
 1.2 Add OpenZeppelin Contracts and configure `foundry.toml` for Solidity 0.8.24.
 1.3 Implement `MockUSDC.sol` with 6 decimals, owner mint, and an optional faucet.
 1.4 Define `Outcome { Unresolved, Yes, No }`.
@@ -197,7 +197,7 @@ payout = winningStake * totalPool / winningPool
 **Goal:** A small Next.js app that lets a wallet use the deployed contracts.
 
 **Sub-phases**
-3.1 Scaffold `predictx-lite/web` with Next.js App Router and TypeScript.
+3.1 Scaffold `packages/web` with Next.js App Router and TypeScript.
 3.2 Add Tailwind CSS.
 3.3 Add wagmi, viem, and RainbowKit or ConnectKit.
 3.4 Configure Base Sepolia and the contract addresses.

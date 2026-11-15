@@ -3,6 +3,9 @@
 > **Active plan:** PredictX Lite. The original full protocol is intentionally deferred; the
 > existing full contract implementation remains in this repo as an advanced reference.
 > Execution roadmap: `PHASES.md` (4 phases).
+>
+> **Status:** contracts, tests, local deploy, and frontend are implemented. Base Sepolia deployment
+> is pending funded deployer credentials and a thirdweb client ID.
 
 ---
 
@@ -86,7 +89,7 @@ built, tested, deployed, and demoed in about four weeks.
 ```text
 ┌──────────────────────────────────────────────┐
 │              Browser (Next.js)               │
-│  wagmi + viem · wallet connect · Tailwind    │
+│  thirdweb SDK · wallet connect · Tailwind    │
 │  Markets · Create · Bet · Resolve · Claim    │
 └───────────────┬──────────────────────────────┘
                 │ direct RPC reads + wallet txs
@@ -116,8 +119,8 @@ hold funds and pay winners according to the parimutuel formula.
 | Contract libs  | **OpenZeppelin Contracts**                   | ERC-20, SafeERC20, ReentrancyGuard   |
 | Collateral     | **MockUSDC**                                 | 6 decimals, owner mint / faucet      |
 | Frontend       | **Next.js App Router + TypeScript**          | No backend                           |
-| Web3 client    | **wagmi + viem**                             | Reads and writes                     |
-| Wallet UI      | **RainbowKit or ConnectKit**                 | Wallet connection                    |
+| Web3 client    | **thirdweb SDK**                             | Wallet, reads, and writes            |
+| Wallet UI      | **thirdweb `ConnectButton`**                 | Wallet connection                    |
 | Styling        | **Tailwind CSS**                             | Keep the UI small                    |
 | Deployment     | **Foundry script + Basescan verification**   | Contracts                            |
 | Web deployment | **Vercel**                                   | Frontend                             |
@@ -153,7 +156,7 @@ PredictX/
 │       │   └── ClaimButton.tsx
 │       ├── lib/
 │       │   ├── contracts.ts
-│       │   └── wagmi.ts
+│       │   └── thirdweb.ts
 │       └── .env.local.example
 ├── PHASES.md
 ├── PROJECT_PLAN.md
@@ -419,9 +422,9 @@ Target: **15–25 Foundry tests** and **>90% coverage on Lite contracts**.
 4. Set frontend environment variables:
 
 ```bash
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=...
 NEXT_PUBLIC_FACTORY_ADDRESS=0x...
 NEXT_PUBLIC_USDC_ADDRESS=0x...
-NEXT_PUBLIC_CHAIN_ID=84532
 ```
 
 5. Create 3–5 demo markets.
@@ -469,7 +472,7 @@ If all nine work smoothly, PredictX Lite is a success.
   USDC betting, manual resolution, and pro-rata winner claims."**
 - **"Wrote a Foundry test suite covering market creation, betting, resolution, double-claim
   prevention, access control, and payout rounding."**
-- **"Built a Next.js + wagmi frontend that reads markets directly from chain and supports
+- **"Built a Next.js + thirdweb frontend that reads markets directly from chain and supports
   wallet-based betting, resolution, and claiming without a backend."**
 - **"Documented the trust model and known limitations of a trusted-resolver prediction market."**
 

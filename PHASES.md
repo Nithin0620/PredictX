@@ -4,6 +4,13 @@
 > resume-focused build. The full contract implementation in this repo is an advanced reference.
 > Product scope and architecture live in `PROJECT_PLAN.md`.
 
+## Current status
+
+- Phase 1 (contracts): complete.
+- Phase 2 (tests/local deploy): complete — 39 Foundry tests, 100% source coverage, Anvil flow verified.
+- Phase 3 (frontend): implemented — pages, thirdweb wallet, faucet, bet, resolve, claim; `next build` passes.
+- Phase 4 (testnet/polish): pending — needs a funded Base Sepolia deployer key, RPC URL, and thirdweb client ID.
+
 ---
 
 ## 0. How to read this document
@@ -199,8 +206,8 @@ payout = winningStake * totalPool / winningPool
 **Sub-phases**
 3.1 Scaffold `packages/web` with Next.js App Router and TypeScript.
 3.2 Add Tailwind CSS.
-3.3 Add wagmi, viem, and RainbowKit or ConnectKit.
-3.4 Configure Base Sepolia and the contract addresses.
+3.3 Add the thirdweb SDK and `ConnectButton` for wallet connection.
+3.4 Configure Base Sepolia, the thirdweb client ID, and the contract addresses.
 3.5 Generate or copy the contract ABIs into `lib/contracts.ts`.
 3.6 Build the market list page.
 3.7 Build the market detail page with pools, deadline, and user positions.

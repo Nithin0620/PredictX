@@ -2,12 +2,13 @@
 
 Foundry workspace for **PredictX Lite** on **Base Sepolia**.
 
-The full AMM/LP/oracle/dispute contracts were removed from the Lite branch. Only the reusable
-`MockUSDC` collateral token remains. The Lite contracts will be added here:
+The full AMM/LP/oracle/dispute contracts were removed from the Lite branch. The Lite protocol is:
 
 - `PredictXMarket.sol` — parimutuel YES/NO pools, resolution, pro-rata claims
 - `PredictXFactory.sol` — market registry
-- `script/DeployLite.s.sol` — deployment script
+- `PredictXTypes.sol` — shared outcome enum
+- `MockUSDC.sol` — 6-decimal test collateral
+- `script/DeployLite.s.sol` — deploy MockUSDC and the factory
 
 ## Prerequisites
 
@@ -44,13 +45,23 @@ pnpm --filter @predictx/contracts build
 pnpm --filter @predictx/contracts test
 ```
 
+Coverage is 100% for lines, statements, branches, and functions in the three Lite source contracts.
+`script/DeployLite.s.sol` is exercised by the local deployment flow, not by unit tests.
+
+## Trust model
+
+- The resolver is trusted and can resolve only after the deadline.
+- Winners split the entire pool pro-rata; rounding dust stays in the market.
+- There is no admin withdrawal, upgrade path, oracle, or dispute mechanism.
+- Testnet only. Mock USDC has no real value.
+
 ## Local chain
 
 ```bash
 # terminal 1 — deterministic Anvil accounts on chain id 31337
 make chain
 
-# terminal 2 — deploy MockUSDC
+# terminal 2 — deploy MockUSDC and PredictXFactory
 make deploy-local
 ```
 
@@ -62,9 +73,14 @@ Anvil account #0 is the default deployer for local runs. Override with `PRIVATE_
 packages/contracts/
 ├── foundry.toml
 ├── src/
-│   └── MockUSDC.sol
+│   ├── MockUSDC.sol
+│   ├── PredictXFactory.sol
+│   ├── PredictXMarket.sol
+│   └── PredictXTypes.sol
 ├── test/
-│   └── MockUSDC.t.sol
+│   ├── MockUSDC.t.sol
+│   ├── PredictXFactory.t.sol
+│   └── PredictXMarket.t.sol
 ├── script/
 │   └── DeployLite.s.sol
 └── lib/          # dependencies (git-ignored; restore with `make contracts-deps`)
